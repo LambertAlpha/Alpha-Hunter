@@ -1,0 +1,8 @@
+# Data and analysis
+pandas>=1.0
+numpy>=1.18
+scikit-learn>=0.23
+
+# Visualization
+matplotlib>=3.0
+seaborn>=0.10

@@ -1,31 +1,19 @@
-# LaTeX 编译产生的文件
-*.aux
-*.fdb_latexmk
-*.fls
-*.log
-*.out
-*.synctex.gz
-*.toc
-*.lof
-*.lot
-*.fot
-*.cb
-*.cb2
-*.bbl
-*.blg
-*.bcf
-*.run.xml
-*.xdv
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-# PDF 文件（如果需要提交PDF，可以移除这一行）
-*.pdf
-
-# Python
+# Python cache and compiled files
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.Python
+
+# Build and distribution
 build/
 develop-eggs/
 dist/
@@ -45,40 +33,52 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# Jupyter Notebook
+# Jupyter Notebook checkpoints
 .ipynb_checkpoints
 
-# Virtual Environment
-venv/
-env/
-ENV/
-.venv
-
-# IDE
-.vscode/
+# IDE and editor files
 .idea/
+.vscode/
 *.swp
 *.swo
 *~
+
+# LaTeX build files
+*.aux
+*.bbl
+*.blg
+*.cb
+*.cb2
+*.fdb_latexmk
+*.fls
+*.log
+*.lof
+*.lot
+*.out
+*.synctex.gz
+*.toc
+*.bcf
+*.run.xml
+*.xdv
 
 # macOS
 .DS_Store
 .AppleDouble
 .LSOverride
 
-# Data files (如果有大型数据集)
-*.csv
-*.h5
-*.hdf5
-*.parquet
+# Data - uncomment if you have large data files to ignore
+# data/
+# *.csv
+# *.json
+# *.h5
+# *.hdf5
 
-# Model checkpoints
+# Logs and outputs
+logs/
+*.log
+feature/
+
+# Model files
 *.pth
 *.pt
 *.ckpt
-*.h5
-
-# Logs
-logs/
-*.log
-
