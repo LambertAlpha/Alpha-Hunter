@@ -33,6 +33,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Data
+data/
+
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints
 
