@@ -1,19 +1,9 @@
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Python cache and compiled files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-
-# Build and distribution
+.Python
 build/
 develop-eggs/
 dist/
@@ -26,62 +16,51 @@ parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
-# Data
-data/
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
 
-# Jupyter Notebook checkpoints
+# Jupyter Notebook
 .ipynb_checkpoints
+*.ipynb_checkpoints/
 
-# IDE and editor files
-.idea/
+# PyTorch
+*.pth
+*.pt
+
+# Results and outputs
+results/
+*.log
+*.csv
+*.pkl
+*.json
+
+# Keep example configs
+!config.json
+!src/config.py
+
+# IDE
 .vscode/
+.idea/
 *.swp
 *.swo
 *~
+.DS_Store
 
-# LaTeX build files
+# Data (but keep feature directory structure)
+feature/*.csv
+!feature/.gitkeep
+
+# Docs
 *.aux
-*.bbl
-*.blg
-*.cb
-*.cb2
 *.fdb_latexmk
 *.fls
-*.log
-*.lof
-*.lot
 *.out
 *.synctex.gz
 *.toc
-*.bcf
-*.run.xml
-*.xdv
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Data - uncomment if you have large data files to ignore
-# data/
-# *.csv
-# *.json
-# *.h5
-# *.hdf5
-
-# Logs and outputs
-logs/
-*.log
-feature/
-
-# Model files
-*.pth
-*.pt
-*.ckpt
