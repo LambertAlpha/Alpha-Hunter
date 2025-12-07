@@ -20,6 +20,7 @@ from .data_loader import SequenceDataLoader
 from .trainer import RollingWindowTrainer
 from .evaluator import PerformanceEvaluator
 from .tfa_analysis import TFAAnalyzer
+from .experiment_tracker import ExperimentTracker
 
 __all__ = [
     "TransformerPredictor",
@@ -32,5 +33,6 @@ __all__ = [
     "RollingWindowTrainer",
     "PerformanceEvaluator",
     "TFAAnalyzer",
+    "ExperimentTracker",
 ]
 

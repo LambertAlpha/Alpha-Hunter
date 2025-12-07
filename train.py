@@ -86,8 +86,10 @@ def get_model_factory(model_name: str, config: Config, device: str = 'cpu'):
     
     elif model_name == 'mlp':
         def factory():
+            # Dynamic input dimension: n_features * sequence_length
+            # Will be computed from actual data shape in fit()
             return MLPPredictor(
-                input_dim=11 * 12,  # Will be set dynamically
+                input_dim=11 * config.data.sequence_length,  # 11 PCA factors * sequence length
                 hidden_dims=config.mlp.hidden_dims,
                 dropout=config.mlp.dropout,
                 lr=config.mlp.lr,
@@ -238,8 +240,8 @@ def main():
         '--device',
         type=str,
         default='auto',
-        choices=['auto', 'cpu', 'cuda'],
-        help='Device for PyTorch models (auto will detect GPU)',
+        choices=['auto', 'cpu', 'cuda', 'mps'],
+        help='Device for PyTorch models (auto will detect GPU: CUDA/MPS)',
     )
     
     parser.add_argument(

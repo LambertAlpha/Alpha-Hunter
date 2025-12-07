@@ -13,6 +13,8 @@ from sklearn.preprocessing import StandardScaler
 from typing import Optional, Dict, Any
 import logging
 
+from .nn_utils import PositionalEncoding
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -40,32 +42,6 @@ class BasePredictor:
 # ============================================================================
 # Transformer Model
 # ============================================================================
-
-class PositionalEncoding(nn.Module):
-    """Sinusoidal positional encoding for sequence position information."""
-    
-    def __init__(self, d_model: int, max_len: int = 100, dropout: float = 0.1):
-        super().__init__()
-        self.dropout = nn.Dropout(p=dropout)
-        
-        # Create positional encoding matrix
-        position = torch.arange(max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) * (-np.log(10000.0) / d_model))
-        
-        pe = torch.zeros(max_len, d_model)
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        
-        self.register_buffer('pe', pe)
-    
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Args:
-            x: Tensor, shape [batch_size, seq_len, d_model]
-        """
-        x = x + self.pe[:x.size(1)]
-        return self.dropout(x)
-
 
 class TransformerEncoder(nn.Module):
     """
@@ -137,42 +113,32 @@ class TransformerEncoder(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
     
-    def forward(self, x: torch.Tensor, return_attention: bool = False) -> torch.Tensor | tuple:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass.
-        
+
         Args:
             x: Input tensor, shape [batch_size, seq_len, input_dim]
-            return_attention: Whether to return attention weights
-            
+
         Returns:
             predictions: shape [batch_size]
-            (optional) attention_weights: list of attention matrices
         """
         # Project input to d_model
         x = self.input_projection(x)  # [batch, seq_len, d_model]
-        
+
         # Add positional encoding
         x = self.pos_encoder(x)
-        
+
         # Transformer encoding
-        if return_attention:
-            # Store attention weights (this is simplified; real implementation needs hooks)
-            encoded = self.transformer_encoder(x)
-            attention_weights = None  # Placeholder
-        else:
-            encoded = self.transformer_encoder(x)  # [batch, seq_len, d_model]
-        
+        encoded = self.transformer_encoder(x)  # [batch, seq_len, d_model]
+
         # Global average pooling over sequence
         pooled = encoded.mean(dim=1)  # [batch, d_model]
-        
+
         # Output projection
         output = self.output_head(pooled).squeeze(-1)  # [batch]
-        
-        if return_attention:
-            return output, attention_weights
-        else:
-            return output
+
+        return output
 
 
 class TransformerPredictor(BasePredictor):
@@ -590,41 +556,78 @@ class MLPPredictor(BasePredictor):
         )
         self.scaler = StandardScaler()
         self.training_history = []
-    
-    def fit(self, X: np.ndarray, y: np.ndarray, verbose: bool = False, **kwargs):
-        """Fit MLP."""
+        self.best_model_state = None
+
+    def fit(self, X: np.ndarray, y: np.ndarray, X_val=None, y_val=None, verbose: bool = False, **kwargs):
+        """Fit MLP with optional validation for best model saving."""
         # Flatten and normalize
         X_flat = X.reshape(X.shape[0], -1)
         X_scaled = self.scaler.fit_transform(X_flat)
-        
+
         X_train = torch.FloatTensor(X_scaled).to(self.device)
         y_train = torch.FloatTensor(y).to(self.device)
-        
+
+        # Prepare validation data if provided
+        has_val = X_val is not None and y_val is not None
+        if has_val:
+            X_val_flat = X_val.reshape(X_val.shape[0], -1)
+            X_val_scaled = self.scaler.transform(X_val_flat)
+            X_val_t = torch.FloatTensor(X_val_scaled).to(self.device)
+            y_val_t = torch.FloatTensor(y_val).to(self.device)
+            best_val_loss = float('inf')
+
         for epoch in range(self.epochs):
             self.model.train()
             indices = np.random.permutation(len(X_train))
             train_loss = 0.0
             n_batches = 0
-            
+
             for i in range(0, len(indices), self.batch_size):
                 batch_idx = indices[i:i+self.batch_size]
                 X_batch = X_train[batch_idx]
                 y_batch = y_train[batch_idx]
-                
+
                 self.optimizer.zero_grad()
                 predictions = self.model(X_batch).squeeze(-1)
                 loss = nn.MSELoss()(predictions, y_batch)
                 loss.backward()
                 self.optimizer.step()
-                
+
                 train_loss += loss.item()
                 n_batches += 1
-            
+
             avg_loss = train_loss / n_batches
-            self.training_history.append({'epoch': epoch + 1, 'train_loss': avg_loss})
-            
+
+            # Validation
+            val_loss = None
+            if has_val:
+                self.model.eval()
+                with torch.no_grad():
+                    val_pred = self.model(X_val_t).squeeze(-1)
+                    val_loss = nn.MSELoss()(val_pred, y_val_t).item()
+
+                # Save best model
+                if val_loss < best_val_loss:
+                    best_val_loss = val_loss
+                    self.best_model_state = {k: v.cpu().clone() for k, v in self.model.state_dict().items()}
+
+            self.training_history.append({
+                'epoch': epoch + 1,
+                'train_loss': avg_loss,
+                'val_loss': val_loss if has_val else None
+            })
+
             if verbose and (epoch + 1) % 10 == 0:
-                logger.info(f"Epoch {epoch+1}/{self.epochs} - Loss: {avg_loss:.6f}")
+                if has_val:
+                    logger.info(f"Epoch {epoch+1}/{self.epochs} - Train Loss: {avg_loss:.6f}, Val Loss: {val_loss:.6f}")
+                else:
+                    logger.info(f"Epoch {epoch+1}/{self.epochs} - Loss: {avg_loss:.6f}")
+
+        # Load best model if validation was used
+        if has_val and self.best_model_state is not None:
+            self.model.load_state_dict(self.best_model_state)
+            if verbose:
+                logger.info(f"Loaded best model from validation (Val Loss: {best_val_loss:.6f})")
     
     def predict(self, X: np.ndarray) -> np.ndarray:
         """Generate predictions."""

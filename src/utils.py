@@ -73,17 +73,22 @@ def set_random_seed(seed: int = 42):
 def check_gpu_availability() -> str:
     """
     Check if GPU is available for PyTorch.
-    
+
+    Supports CUDA (NVIDIA) and MPS (Apple Silicon).
+
     Returns
     -------
     device : str
-        'cuda' if GPU available, else 'cpu'
+        'cuda', 'mps', or 'cpu'
     """
     try:
         import torch
         if torch.cuda.is_available():
-            print(f"GPU available: {torch.cuda.get_device_name(0)}")
+            print(f"GPU available: {torch.cuda.get_device_name(0)} (CUDA)")
             return 'cuda'
+        elif torch.backends.mps.is_available():
+            print("GPU available: Apple Silicon (MPS)")
+            return 'mps'
         else:
             print("GPU not available, using CPU")
             return 'cpu'

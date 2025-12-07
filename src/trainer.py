@@ -56,10 +56,13 @@ class RollingWindowTrainer:
         self.min_train_months = min_train_months
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True, parents=True)
-        
+
         self.results = []
         self.models = {}  # Store trained models by date
         self.evaluator = PerformanceEvaluator()
+
+        # Cache for validation datasets to avoid redundant loading
+        self._dataset_cache = {}
     
     def train_and_predict(
         self,
@@ -126,8 +129,19 @@ class RollingWindowTrainer:
                 if verbose:
                     logger.info(f"Train samples: {len(X_train)}, Val samples: {len(X_val)}")
                 
+                # Additional validation
+                if len(X_train) == 0:
+                    logger.warning(f"No training samples for {test_date}, skipping")
+                    continue
+                if len(X_val) == 0:
+                    logger.warning(f"No validation samples for {test_date}, skipping")
+                    continue
+                
             except Exception as e:
-                logger.warning(f"Failed to build training data for {test_date}: {e}")
+                if verbose:
+                    logger.warning(f"Failed to build training data for {test_date}: {e}")
+                else:
+                    logger.debug(f"Failed to build training data for {test_date}: {e}")
                 continue
             
             # Train model
@@ -203,15 +217,18 @@ class RollingWindowTrainer:
     def _build_dataset(
         self,
         dates: list[pd.Timestamp],
+        use_cache: bool = True,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
-        Build dataset from multiple dates.
-        
+        Build dataset from multiple dates with caching support.
+
         Parameters
         ----------
         dates : list of pd.Timestamp
             Dates to include in dataset
-            
+        use_cache : bool, default=True
+            Whether to use cached data if available
+
         Returns
         -------
         X : np.ndarray, shape (n_samples, seq_len, n_features)
@@ -221,10 +238,17 @@ class RollingWindowTrainer:
         assets : np.ndarray, shape (n_samples,)
             Asset identifiers
         """
+        # Create cache key from date range
+        cache_key = (dates[0], dates[-1])
+
+        # Check cache first
+        if use_cache and cache_key in self._dataset_cache:
+            return self._dataset_cache[cache_key]
+
         X_list = []
         y_list = []
         assets_list = []
-        
+
         for date in dates:
             try:
                 data_dict = self.data_loader.build_sequences(
@@ -232,22 +256,56 @@ class RollingWindowTrainer:
                     include_target=True,
                     return_dict=True,
                 )
-                
-                X_list.append(data_dict['X'])
-                y_list.append(data_dict['y'])
-                assets_list.append(data_dict['assets'])
-                
+
+                # Check if we have valid data
+                if 'X' not in data_dict or len(data_dict['X']) == 0:
+                    logger.debug(f"No valid sequences for date {date}")
+                    continue
+
+                X_data = data_dict['X']
+                assets_data = data_dict['assets']
+
+                # Check if we have target returns
+                if 'y' in data_dict and len(data_dict['y']) > 0:
+                    y_data = data_dict['y']
+                    # Ensure all arrays have the same length
+                    if len(X_data) == len(y_data) == len(assets_data):
+                        X_list.append(X_data)
+                        y_list.append(y_data)
+                        assets_list.append(assets_data)
+                    else:
+                        logger.warning(
+                            f"Mismatched array lengths for date {date}: "
+                            f"X={len(X_data)}, y={len(y_data)}, assets={len(assets_data)}"
+                        )
+                        continue
+                else:
+                    # No target returns available - skip this date for training
+                    logger.debug(f"No target returns for date {date}, skipping")
+                    continue
+
             except Exception as e:
                 logger.debug(f"Skipping date {date}: {e}")
                 continue
-        
+
         if len(X_list) == 0:
-            raise ValueError("No valid sequences found in the specified dates")
-        
-        X = np.vstack(X_list)
-        y = np.concatenate(y_list)
-        assets = np.concatenate(assets_list)
-        
+            raise ValueError(f"No valid sequences found in the specified dates ({len(dates)} dates checked)")
+
+        # Stack arrays
+        try:
+            X = np.vstack(X_list)
+            y = np.concatenate(y_list)
+            assets = np.concatenate(assets_list)
+        except ValueError as e:
+            logger.error(f"Failed to concatenate arrays: {e}")
+            logger.error(f"X_list lengths: {[len(x) for x in X_list]}")
+            logger.error(f"y_list lengths: {[len(y) for y in y_list]}")
+            raise ValueError(f"Failed to concatenate arrays: {e}")
+
+        # Cache the result
+        if use_cache:
+            self._dataset_cache[cache_key] = (X, y, assets)
+
         return X, y, assets
     
     def evaluate_predictions(
@@ -324,97 +382,4 @@ class RollingWindowTrainer:
         with open(load_path, 'rb') as f:
             self.models = pickle.load(f)
         logger.info(f"Loaded {len(self.models)} models from {load_path}")
-
-
-class GridSearchCV:
-    """
-    Grid search with rolling window cross-validation.
-    
-    Parameters
-    ----------
-    data_loader : SequenceDataLoader
-        Data loader
-    model_factory : Callable
-        Function that takes hyperparameters and returns a model
-    param_grid : dict
-        Parameter grid for search
-    n_splits : int, default=3
-        Number of rolling window splits for CV
-    """
-    
-    def __init__(
-        self,
-        data_loader: SequenceDataLoader,
-        model_factory: Callable,
-        param_grid: Dict[str, list],
-        n_splits: int = 3,
-    ):
-        self.data_loader = data_loader
-        self.model_factory = model_factory
-        self.param_grid = param_grid
-        self.n_splits = n_splits
-        
-        self.best_params_ = None
-        self.best_score_ = -np.inf
-        self.cv_results_ = []
-    
-    def fit(self, verbose: bool = True):
-        """Run grid search."""
-        from itertools import product
-        
-        # Generate parameter combinations
-        param_names = list(self.param_grid.keys())
-        param_values = list(self.param_grid.values())
-        param_combinations = list(product(*param_values))
-        
-        logger.info(f"Starting grid search with {len(param_combinations)} combinations")
-        
-        for i, param_vals in enumerate(param_combinations):
-            params = dict(zip(param_names, param_vals))
-            
-            if verbose:
-                logger.info(f"\n{'='*60}")
-                logger.info(f"Combination {i+1}/{len(param_combinations)}: {params}")
-            
-            # Run CV
-            scores = []
-            for split_idx in range(self.n_splits):
-                # Create trainer with current params
-                trainer = RollingWindowTrainer(
-                    data_loader=self.data_loader,
-                    model_factory=lambda: self.model_factory(**params),
-                )
-                
-                # Train and evaluate on a subset
-                try:
-                    predictions_df = trainer.train_and_predict(verbose=False)
-                    ic_series = PerformanceEvaluator().compute_ic(predictions_df)
-                    score = ic_series.mean()
-                    scores.append(score)
-                except Exception as e:
-                    logger.warning(f"Split {split_idx} failed: {e}")
-                    scores.append(-np.inf)
-            
-            avg_score = np.mean(scores)
-            self.cv_results_.append({
-                'params': params,
-                'scores': scores,
-                'mean_score': avg_score,
-                'std_score': np.std(scores),
-            })
-            
-            if verbose:
-                logger.info(f"Mean IC: {avg_score:.4f} (±{np.std(scores):.4f})")
-            
-            # Update best
-            if avg_score > self.best_score_:
-                self.best_score_ = avg_score
-                self.best_params_ = params
-        
-        logger.info(f"\n{'='*60}")
-        logger.info(f"Grid search completed")
-        logger.info(f"Best params: {self.best_params_}")
-        logger.info(f"Best score: {self.best_score_:.4f}")
-        
-        return self
 

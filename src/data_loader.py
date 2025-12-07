@@ -74,8 +74,8 @@ class SequenceDataLoader:
         return_dict: bool = False,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray] | Dict[str, np.ndarray]:
         """
-        Build sequences ending at target_date.
-        
+        Build sequences ending at target_date (vectorized for performance).
+
         Parameters
         ----------
         target_date : pd.Timestamp
@@ -84,7 +84,7 @@ class SequenceDataLoader:
             Whether to include target returns in output
         return_dict : bool, default=False
             Whether to return a dictionary instead of tuple
-            
+
         Returns
         -------
         If return_dict=False:
@@ -94,85 +94,102 @@ class SequenceDataLoader:
                 Target returns (only if include_target=True)
             assets : np.ndarray, shape (n_samples,)
                 Asset identifiers
-                
+
         If return_dict=True:
             Dictionary with keys 'X', 'y', 'assets', 'date'
         """
         # Get sequence dates
         target_idx = self.dates.index(target_date)
-        
+
         if target_idx < self.sequence_length:
             raise ValueError(
                 f"Not enough history for target_date {target_date}. "
                 f"Need at least {self.sequence_length} months."
             )
-        
+
         sequence_dates = self.dates[target_idx - self.sequence_length : target_idx]
-        
-        # Get data for sequence dates
+
+        # Vectorized approach: pivot all sequence data at once
         sequence_data = self.df[self.df['date'].isin(sequence_dates)]
-        
-        # Pivot to wide format: (date, asset) -> features
-        pivot_data = {}
-        for date in sequence_dates:
-            date_df = sequence_data[sequence_data['date'] == date]
-            pivot_data[date] = date_df.set_index('asset')[self.feature_columns]
-        
-        # Get target date data
+
+        # Create multi-index pivot: assets x dates x features
+        pivoted = sequence_data.pivot_table(
+            index='asset',
+            columns='date',
+            values=self.feature_columns,
+            aggfunc='first'  # In case of duplicates
+        )
+
+        # Forward fill missing data (limit per asset)
+        filled = pivoted.ffill(axis=1, limit=self.forward_fill_limit)
+
+        # Find assets with complete sequences (no NaN after ffill)
+        complete_mask = filled.notna().all(axis=1)
+        complete_assets = filled[complete_mask].index
+
+        if len(complete_assets) == 0:
+            raise ValueError(
+                f"No valid sequences found for target_date {target_date}. "
+                f"No assets have complete {self.sequence_length}-month history."
+            )
+
+        # Get target date data for filtering
         target_df = self.df[self.df['date'] == target_date].set_index('asset')
-        
-        # Build sequences for each asset present in target date
-        sequences = []
-        targets = []
-        valid_assets = []
-        
-        for asset in target_df.index:
-            # Collect sequence for this asset
-            seq = []
-            missing_count = 0
-            last_valid = None
-            
-            for date in sequence_dates:
-                if asset in pivot_data[date].index:
-                    values = pivot_data[date].loc[asset].values
-                    seq.append(values)
-                    last_valid = values
-                    missing_count = 0
-                else:
-                    # Forward fill if within limit
-                    if last_valid is not None and missing_count < self.forward_fill_limit:
-                        seq.append(last_valid)
-                        missing_count += 1
-                    else:
-                        seq = None
-                        break
-            
-            # Only include if we have complete sequence
-            if seq is not None and len(seq) == self.sequence_length:
-                sequences.append(np.array(seq))
-                valid_assets.append(asset)
-                
-                if include_target and 'return' in target_df.columns:
-                    targets.append(target_df.loc[asset, 'return'])
-        
-        if len(sequences) == 0:
-            raise ValueError(f"No valid sequences found for target_date {target_date}")
-        
-        X = np.array(sequences)  # (n_samples, sequence_length, n_features)
-        assets = np.array(valid_assets)
-        
+
+        if len(target_df) == 0:
+            raise ValueError(f"No data available for target_date {target_date}")
+
+        # Filter to assets present in target date
+        valid_assets = complete_assets.intersection(target_df.index)
+
+        if len(valid_assets) == 0:
+            raise ValueError(
+                f"No valid sequences found for target_date {target_date}. "
+                f"No complete sequences for assets in target date."
+            )
+
+        # Further filter by non-missing returns if needed
+        has_return_column = 'return' in target_df.columns
+        if include_target and has_return_column:
+            # Only keep assets with valid returns
+            valid_returns_mask = target_df.loc[valid_assets, 'return'].notna()
+            valid_assets = valid_assets[valid_returns_mask]
+
+            if len(valid_assets) == 0:
+                raise ValueError(
+                    f"No valid sequences found for target_date {target_date}. "
+                    f"All assets have missing return data."
+                )
+
+        # Extract sequences for valid assets
+        # Reshape from (n_assets, n_dates*n_features) to (n_assets, n_dates, n_features)
+        sequences_flat = filled.loc[valid_assets].values
+        n_assets = len(valid_assets)
+        n_features = len(self.feature_columns)
+
+        # Reshape: columns are organized as [date1_feat1, date1_feat2, ..., date2_feat1, ...]
+        # We need to reshape to (n_assets, seq_len, n_features)
+        X = sequences_flat.reshape(n_assets, self.sequence_length, n_features)
+
+        assets = valid_assets.values
+
+        # Get targets if requested
+        targets = None
+        if include_target and has_return_column:
+            targets = target_df.loc[valid_assets, 'return'].values
+
         if return_dict:
             result = {
                 'X': X,
                 'assets': assets,
                 'date': target_date,
             }
-            if include_target and len(targets) > 0:
-                result['y'] = np.array(targets)
+            if targets is not None:
+                result['y'] = targets
             return result
         else:
-            if include_target and len(targets) > 0:
-                return X, np.array(targets), assets
+            if targets is not None:
+                return X, targets, assets
             else:
                 return X, assets
     
@@ -212,34 +229,7 @@ class SequenceDataLoader:
         
         logger.info(f"Generated {len(splits)} rolling window splits")
         return splits
-    
-    def load_returns(self, return_path: str | Path) -> pd.DataFrame:
-        """
-        Load return data and merge with features.
-        
-        Parameters
-        ----------
-        return_path : str or Path
-            Path to returns CSV file with columns: date, asset, return
-            
-        Returns
-        -------
-        pd.DataFrame
-            DataFrame with returns merged
-        """
-        returns = pd.read_csv(return_path)
-        returns['date'] = pd.to_datetime(returns['date'])
-        
-        # Merge returns
-        self.df = self.df.merge(
-            returns[['date', 'asset', 'return']],
-            on=['date', 'asset'],
-            how='left'
-        )
-        
-        logger.info(f"Merged returns: {self.df['return'].notna().sum()} valid observations")
-        return self.df
-    
+
     def get_statistics(self) -> Dict[str, any]:
         """Get dataset statistics."""
         stats = {

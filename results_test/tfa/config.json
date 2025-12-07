@@ -1,0 +1,80 @@
+{
+  "data": {
+    "pca_path": "feature/pca_feature_store.csv",
+    "returns_path": null,
+    "sequence_length": 36,
+    "forward_fill_limit": 3
+  },
+  "training": {
+    "train_window": 60,
+    "val_window": 12,
+    "min_train_months": 36,
+    "output_dir": "results",
+    "save_models": false,
+    "verbose": true
+  },
+  "transformer": {
+    "d_model": 64,
+    "nhead": 4,
+    "num_layers": 2,
+    "dim_feedforward": 256,
+    "dropout": 0.1,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "batch_size": 128,
+    "epochs": 50,
+    "early_stopping_patience": 5,
+    "device": "cpu"
+  },
+  "tfa": {
+    "n_pca_factors": 11,
+    "seq_len": 36,
+    "d_model": 128,
+    "n_heads": 8,
+    "n_encoder_layers": 4,
+    "n_decoder_layers": 2,
+    "n_latent_factors": 5,
+    "dropout": 0.1,
+    "n_classes": 5,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "batch_size": 128,
+    "epochs": 5,
+    "early_stopping_patience": 5,
+    "alpha": 0.1,
+    "beta": 0.05,
+    "gamma": 0.01,
+    "device": "cpu"
+  },
+  "ridge": {
+    "alpha": 1.0
+  },
+  "random_forest": {
+    "n_estimators": 100,
+    "max_depth": 10,
+    "min_samples_split": 10,
+    "n_jobs": -1,
+    "random_state": 42
+  },
+  "mlp": {
+    "hidden_dims": [
+      256,
+      128,
+      64
+    ],
+    "dropout": 0.2,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "batch_size": 128,
+    "epochs": 50,
+    "device": "cpu"
+  },
+  "evaluation": {
+    "long_pct": 0.1,
+    "short_pct": 0.1,
+    "transaction_cost": 0.003,
+    "weighting": "equal",
+    "periods_per_year": 12,
+    "risk_free_rate": 0.0
+  }
+}

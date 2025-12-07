@@ -58,7 +58,7 @@ def main():
     parser.add_argument('--gamma', type=float, default=0.01, help='Orthogonality weight')
     
     # Other arguments
-    parser.add_argument('--device', type=str, default='auto', help='Device (auto/cpu/cuda)')
+    parser.add_argument('--device', type=str, default='auto', help='Device (auto/cpu/cuda/mps)')
     parser.add_argument('--seed', type=int, default=42, help='Random seed')
     parser.add_argument('--output_dir', type=str, default='results/tfa', help='Output directory')
     parser.add_argument('--verbose', action='store_true', help='Verbose output')

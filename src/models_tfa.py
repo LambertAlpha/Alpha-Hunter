@@ -20,30 +20,10 @@ import torch.nn.functional as F
 from typing import Optional, Dict, Tuple
 import logging
 
+from .nn_utils import PositionalEncoding
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-class PositionalEncoding(nn.Module):
-    """Sinusoidal positional encoding for sequence position information."""
-    
-    def __init__(self, d_model: int, max_len: int = 100, dropout: float = 0.1):
-        super().__init__()
-        self.dropout = nn.Dropout(p=dropout)
-        
-        position = torch.arange(max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) * (-np.log(10000.0) / d_model))
-        
-        pe = torch.zeros(max_len, d_model)
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        
-        self.register_buffer('pe', pe)
-    
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """x: (batch, seq_len, d_model)"""
-        x = x + self.pe[:x.size(1)]
-        return self.dropout(x)
 
 
 class TemporalFactorAutoencoder(nn.Module):
@@ -445,8 +425,7 @@ class TFAPredictor:
             self.optimizer,
             mode='min',
             factor=0.5,
-            patience=3,
-            verbose=True
+            patience=3
         )
         
         self.training_history = []
