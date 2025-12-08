@@ -716,3 +716,7 @@ class TFAPredictor:
             'gamma': self.gamma,
         }
 
+    def save(self, path: str):
+        """Save best model weights if available, otherwise current weights."""
+        state = self.best_model_state if self.best_model_state is not None else self.model.state_dict()
+        torch.save(state, path)

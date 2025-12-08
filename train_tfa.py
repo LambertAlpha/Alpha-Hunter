@@ -185,6 +185,7 @@ def main():
         verbose=args.verbose,
         max_prediction_dates=args.max_prediction_dates,
         prediction_step=args.prediction_step,
+        save_last_model_path=output_dir / 'tfa_model_last.pt',
     )
     
     if len(predictions_df) == 0:

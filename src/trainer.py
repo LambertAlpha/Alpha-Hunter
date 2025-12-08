@@ -71,6 +71,7 @@ class RollingWindowTrainer:
         verbose: bool = True,
         max_prediction_dates: Optional[int] = None,
         prediction_step: int = 1,
+        save_last_model_path: Optional[Path | str] = None,
     ) -> pd.DataFrame:
         """
         Run rolling window training and generate out-of-sample predictions.
@@ -133,6 +134,7 @@ class RollingWindowTrainer:
         
         for date_idx, i in date_pbar:
             test_date = dates[i]
+            is_last_date = (date_idx == len(prediction_indices) - 1)
             
             # Update progress bar with current date
             date_pbar.set_description(f"日期 {test_date.strftime('%Y-%m')}")
@@ -249,6 +251,14 @@ class RollingWindowTrainer:
                 # Save model if requested
                 if save_models:
                     self.models[test_date] = model
+
+                # Optionally persist the last trained model weights (e.g., for interpretation)
+                if save_last_model_path and is_last_date and hasattr(model, 'save'):
+                    try:
+                        model.save(save_last_model_path)
+                        logger.info(f"Saved last model to {save_last_model_path}")
+                    except Exception as e:
+                        logger.warning(f"Failed to save model to {save_last_model_path}: {e}")
                 
             except Exception as e:
                 logger.error(f"Failed to generate predictions for {test_date}: {e}")
@@ -456,4 +466,3 @@ class RollingWindowTrainer:
         with open(load_path, 'rb') as f:
             self.models = pickle.load(f)
         logger.info(f"Loaded {len(self.models)} models from {load_path}")
-
