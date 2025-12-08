@@ -14,4 +14,4 @@
 要点：
 - 增加到 31 因子后，IC/ICIR 总体低于 11 因子版本，信噪比下降。
 - Random Forest 在 IC/ICIR 上最好，Transformer/TFA 表现一般，MLP 最弱。
-- 长-only Sharpe 极高需复核，不建议作为交易结论。
+- long-only Sharpe 极高需复核，不建议作为交易结论。
