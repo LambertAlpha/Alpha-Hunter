@@ -22,4 +22,4 @@
 - 少因子信噪比更高，Transformer 在预测上领先，TFA 回撤更小。
 - 重构权重（alpha）过大抑制预测；减小 alpha 可望提升 IC/ICIR，需权衡 Sharpe。
 - beta/gamma 提供稳定性，去掉会明显恶化预测。
-- 长-only Sharpe 异常高需复核。***
+- long-only Sharpe 异常高需复核。***
