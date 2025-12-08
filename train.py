@@ -10,6 +10,7 @@ Usage:
 import argparse
 import sys
 from pathlib import Path
+from typing import Optional
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -33,7 +34,7 @@ from src.utils import (
 )
 
 
-def get_model_factory(model_name: str, config: Config, device: str = 'cpu'):
+def get_model_factory(model_name: str, config: Config, device: str = 'cpu', data_loader=None):
     """
     Get model factory function.
     
@@ -45,6 +46,8 @@ def get_model_factory(model_name: str, config: Config, device: str = 'cpu'):
         Configuration object
     device : str
         Device for PyTorch models
+    data_loader : SequenceDataLoader, optional
+        Data loader for getting feature dimensions
         
     Returns
     -------
@@ -55,8 +58,14 @@ def get_model_factory(model_name: str, config: Config, device: str = 'cpu'):
     
     if model_name == 'transformer':
         def factory():
+            # Get actual input_dim from data_loader stats if available
+            if data_loader is not None:
+                stats = data_loader.get_statistics()
+                input_dim = stats['n_features']
+            else:
+                input_dim = 11  # Default fallback
             return TransformerPredictor(
-                input_dim=11,  # Will be set dynamically
+                input_dim=input_dim,
                 d_model=config.transformer.d_model,
                 nhead=config.transformer.nhead,
                 num_layers=config.transformer.num_layers,
@@ -86,10 +95,13 @@ def get_model_factory(model_name: str, config: Config, device: str = 'cpu'):
     
     elif model_name == 'mlp':
         def factory():
-            # Dynamic input dimension: n_features * sequence_length
-            # Will be computed from actual data shape in fit()
+            # Dynamic input dimension: n_features * sequence_length (use actual n_features from data_loader if available)
+            input_dim = (
+                data_loader.get_statistics()['n_features'] * config.data.sequence_length
+                if data_loader is not None else 11 * config.data.sequence_length
+            )
             return MLPPredictor(
-                input_dim=11 * config.data.sequence_length,  # 11 PCA factors * sequence length
+                input_dim=input_dim,
                 hidden_dims=config.mlp.hidden_dims,
                 dropout=config.mlp.dropout,
                 lr=config.mlp.lr,
@@ -112,6 +124,8 @@ def train_model(
     output_dir: Path,
     device: str = 'cpu',
     logger=None,
+    max_prediction_dates: Optional[int] = None,
+    prediction_step: int = 1,
 ):
     """
     Train a single model.
@@ -141,7 +155,7 @@ def train_model(
     ensure_dir(model_output_dir)
     
     # Get model factory
-    factory = get_model_factory(model_name, config, device)
+    factory = get_model_factory(model_name, config, device, data_loader)
     
     # Create trainer
     trainer = RollingWindowTrainer(
@@ -157,6 +171,8 @@ def train_model(
     predictions_df = trainer.train_and_predict(
         save_models=config.training.save_models,
         verbose=config.training.verbose,
+        max_prediction_dates=max_prediction_dates,
+        prediction_step=prediction_step,
     )
     
     if len(predictions_df) == 0:
@@ -228,6 +244,12 @@ def main():
         default='feature/pca_feature_store.csv',
         help='Path to PCA features CSV',
     )
+    parser.add_argument(
+        '--returns_path',
+        type=str,
+        default='data/cleaned/monthly_returns_proxy.csv',
+        help='Path to returns CSV (date, asset, return). Set to blank to skip merge.',
+    )
     
     parser.add_argument(
         '--output_dir',
@@ -255,6 +277,20 @@ def main():
         '--verbose',
         action='store_true',
         help='Verbose output',
+    )
+    
+    parser.add_argument(
+        '--max_prediction_dates',
+        type=int,
+        default=None,
+        help='Max number of prediction dates (for faster testing)',
+    )
+    
+    parser.add_argument(
+        '--prediction_step',
+        type=int,
+        default=1,
+        help='Step size for prediction dates (1=every date, 2=every other, etc.)',
     )
     
     args = parser.parse_args()
@@ -292,6 +328,7 @@ def main():
     
     # Override config with command-line args
     config.data.pca_path = args.pca_path
+    config.data.returns_path = args.returns_path
     config.training.output_dir = str(output_dir)
     config.training.verbose = args.verbose
     
@@ -303,6 +340,7 @@ def main():
     logger.info(f"\nLoading data from {args.pca_path}")
     data_loader = SequenceDataLoader(
         pca_path=config.data.pca_path,
+        returns_path=config.data.returns_path if config.data.returns_path else None,
         sequence_length=config.data.sequence_length,
         forward_fill_limit=config.data.forward_fill_limit,
     )
@@ -330,6 +368,8 @@ def main():
                     output_dir,
                     device,
                     logger,
+                    max_prediction_dates=args.max_prediction_dates,
+                    prediction_step=args.prediction_step,
                 )
                 results[model_name] = stats
             except Exception as e:
@@ -356,6 +396,8 @@ def main():
             output_dir,
             device,
             logger,
+            max_prediction_dates=args.max_prediction_dates,
+            prediction_step=args.prediction_step,
         )
     
     logger.info(f"\n{'='*60}")
@@ -364,6 +406,5 @@ def main():
 
 
 if __name__ == '__main__':
-    import pandas as pd
+    import pandas as pd  # noqa: F401
     main()
-

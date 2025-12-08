@@ -40,22 +40,28 @@ def main():
         default='feature/pca_feature_store.csv',
         help='Path to PCA features'
     )
+    parser.add_argument(
+        '--returns_path',
+        type=str,
+        default='data/cleaned/monthly_returns_proxy.csv',
+        help='Path to returns CSV (must have date, asset, return)'
+    )
     
-    # Model arguments  
-    parser.add_argument('--d_model', type=int, default=128, help='Model dimension')
-    parser.add_argument('--n_heads', type=int, default=8, help='Number of attention heads')
-    parser.add_argument('--n_encoder_layers', type=int, default=4, help='Encoder layers')
-    parser.add_argument('--n_latent_factors', type=int, default=5, help='Latent factors')
+    # Model arguments (Optimized TFA defaults)
+    parser.add_argument('--d_model', type=int, default=64, help='Model dimension')
+    parser.add_argument('--n_heads', type=int, default=4, help='Number of attention heads')
+    parser.add_argument('--n_encoder_layers', type=int, default=2, help='Encoder layers')
+    parser.add_argument('--n_latent_factors', type=int, default=3, help='Latent factors')
     
     # Training arguments
     parser.add_argument('--epochs', type=int, default=50, help='Training epochs')
     parser.add_argument('--batch_size', type=int, default=128, help='Batch size')
-    parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
+    parser.add_argument('--lr', type=float, default=5e-4, help='Learning rate')
     
-    # Loss weights
-    parser.add_argument('--alpha', type=float, default=0.1, help='Reconstruction weight')
-    parser.add_argument('--beta', type=float, default=0.05, help='Smoothness weight')
-    parser.add_argument('--gamma', type=float, default=0.01, help='Orthogonality weight')
+    # Loss weights (Optimized TFA defaults)
+    parser.add_argument('--alpha', type=float, default=0.05, help='Reconstruction weight')
+    parser.add_argument('--beta', type=float, default=0.01, help='Smoothness weight')
+    parser.add_argument('--gamma', type=float, default=0.005, help='Orthogonality weight')
     
     # Other arguments
     parser.add_argument('--device', type=str, default='auto', help='Device (auto/cpu/cuda/mps)')
@@ -63,6 +69,8 @@ def main():
     parser.add_argument('--output_dir', type=str, default='results/tfa', help='Output directory')
     parser.add_argument('--verbose', action='store_true', help='Verbose output')
     parser.add_argument('--analyze', action='store_true', help='Run analysis after training')
+    parser.add_argument('--max_prediction_dates', type=int, default=None, help='Max number of prediction dates (for faster testing)')
+    parser.add_argument('--prediction_step', type=int, default=1, help='Step size for prediction dates (1=every date, 2=every other, etc.)')
     
     args = parser.parse_args()
     
@@ -86,6 +94,14 @@ def main():
     logger.info(f"Device: {device}")
     logger.info(f"PCA Path: {args.pca_path}")
     logger.info(f"Output: {output_dir}")
+    logger.info("="*60)
+    logger.info("Configuration (Optimized TFA with Rank-based Returns):")
+    logger.info(f"  Model: d_model={args.d_model}, n_heads={args.n_heads}")
+    logger.info(f"         n_encoder_layers={args.n_encoder_layers}, n_latent_factors={args.n_latent_factors}")
+    logger.info(f"  Training: epochs={args.epochs}, batch_size={args.batch_size}, lr={args.lr}")
+    logger.info(f"  Loss weights: alpha={args.alpha}, beta={args.beta}, gamma={args.gamma}")
+    logger.info("  Data: Rank-based returns transformation enabled")
+    logger.info("="*60)
     
     # Load configuration
     config = Config()
@@ -102,6 +118,8 @@ def main():
     config.tfa.beta = args.beta
     config.tfa.gamma = args.gamma
     config.tfa.device = device
+    config.data.pca_path = args.pca_path
+    config.data.returns_path = args.returns_path
     
     # Save config
     config.save(output_dir / 'config.json')
@@ -111,6 +129,7 @@ def main():
     logger.info(f"\nLoading data from {args.pca_path}")
     data_loader = SequenceDataLoader(
         pca_path=args.pca_path,
+        returns_path=args.returns_path,
         sequence_length=config.tfa.seq_len,  # 36 months
         forward_fill_limit=config.data.forward_fill_limit,
     )
@@ -164,6 +183,8 @@ def main():
     predictions_df = trainer.train_and_predict(
         save_models=False,
         verbose=args.verbose,
+        max_prediction_dates=args.max_prediction_dates,
+        prediction_step=args.prediction_step,
     )
     
     if len(predictions_df) == 0:
@@ -258,4 +279,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

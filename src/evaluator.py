@@ -422,7 +422,12 @@ class PerformanceEvaluator:
         fig, axes = plt.subplots(2, 2, figsize=(14, 10))
         
         # 1. IC over time
-        axes[0, 0].plot(ic_series.index, ic_series.values, alpha=0.7)
+        # Ensure index is datetime
+        ic_index = ic_series.index
+        if not isinstance(ic_index, pd.DatetimeIndex):
+            ic_index = pd.to_datetime(ic_index)
+        
+        axes[0, 0].plot(ic_index, ic_series.values, alpha=0.7)
         axes[0, 0].axhline(y=0, color='red', linestyle='--', alpha=0.5)
         axes[0, 0].axhline(y=ic_series.mean(), color='green', linestyle='--', alpha=0.5, label=f'Mean: {ic_series.mean():.3f}')
         axes[0, 0].set_title('Information Coefficient Over Time')
@@ -430,6 +435,10 @@ class PerformanceEvaluator:
         axes[0, 0].set_ylabel('IC')
         axes[0, 0].legend()
         axes[0, 0].tick_params(axis='x', rotation=45)
+        
+        # Format x-axis dates
+        from matplotlib.dates import DateFormatter
+        axes[0, 0].xaxis.set_major_formatter(DateFormatter('%Y-%m'))
         
         # 2. IC distribution
         axes[0, 1].hist(ic_series.dropna(), bins=30, alpha=0.7, edgecolor='black')
@@ -441,22 +450,63 @@ class PerformanceEvaluator:
         
         # 3. Cumulative returns
         cum_returns = (1 + portfolio_df['ls_ret_net']).cumprod()
-        axes[1, 0].plot(cum_returns.index, cum_returns.values, linewidth=2)
+        cum_dates = cum_returns.index
+        if not isinstance(cum_dates, pd.DatetimeIndex):
+            cum_dates = pd.to_datetime(cum_dates)
+        
+        axes[1, 0].plot(cum_dates, cum_returns.values, linewidth=2)
         axes[1, 0].set_title('Cumulative Long-Short Returns')
         axes[1, 0].set_xlabel('Date')
         axes[1, 0].set_ylabel('Cumulative Return')
         axes[1, 0].tick_params(axis='x', rotation=45)
         axes[1, 0].grid(True, alpha=0.3)
         
+        # Format x-axis dates
+        from matplotlib.dates import DateFormatter
+        axes[1, 0].xaxis.set_major_formatter(DateFormatter('%Y-%m'))
+        
         # 4. Monthly returns
-        axes[1, 1].bar(portfolio_df.index, portfolio_df['ls_ret_net'].values, alpha=0.7, color='steelblue')
-        axes[1, 1].axhline(y=0, color='red', linestyle='--', alpha=0.5)
+        returns = portfolio_df['ls_ret_net'].values
+        dates = portfolio_df.index
+        
+        # Ensure dates are datetime type
+        if not isinstance(dates, pd.DatetimeIndex):
+            dates = pd.to_datetime(dates)
+        
+        # Calculate appropriate bar width based on number of dates
+        # Use relative width (days) instead of absolute numeric conversion
+        if len(dates) > 1:
+            # Calculate average days between dates
+            date_diffs = pd.Series(dates).diff().dropna()
+            if len(date_diffs) > 0:
+                avg_days = date_diffs.mean().total_seconds() / (24 * 3600)  # Convert to days
+                bar_width = max(avg_days * 0.6, 1.0)  # 60% of spacing, minimum 1 day
+            else:
+                bar_width = 20  # Default: 20 days
+        else:
+            bar_width = 20  # Default: 20 days
+        
+        # Use different colors for positive and negative returns
+        colors = ['green' if r >= 0 else 'red' for r in returns]
+        
+        axes[1, 1].bar(dates, returns, width=bar_width, alpha=0.7, color=colors, edgecolor='black', linewidth=0.5)
+        axes[1, 1].axhline(y=0, color='black', linestyle='-', alpha=0.3, linewidth=1)
         axes[1, 1].set_title('Monthly Long-Short Returns')
         axes[1, 1].set_xlabel('Date')
         axes[1, 1].set_ylabel('Return')
         axes[1, 1].tick_params(axis='x', rotation=45)
+        axes[1, 1].grid(True, alpha=0.3, axis='y')
         
-        plt.tight_layout()
+        # Format x-axis dates properly
+        from matplotlib.dates import DateFormatter
+        axes[1, 1].xaxis.set_major_formatter(DateFormatter('%Y-%m'))
+        
+        # Use constrained_layout instead of tight_layout to avoid date overflow issues
+        try:
+            plt.tight_layout()
+        except (OverflowError, ValueError) as e:
+            logger.warning(f"tight_layout failed: {e}. Using constrained_layout instead.")
+            fig.set_constrained_layout(True)
         
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')

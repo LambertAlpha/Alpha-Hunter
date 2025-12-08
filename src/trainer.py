@@ -11,6 +11,7 @@ from typing import Dict, Any, Optional, Callable
 from datetime import datetime
 import pickle
 import logging
+from tqdm import tqdm
 
 from .models import BasePredictor
 from .data_loader import SequenceDataLoader
@@ -68,6 +69,8 @@ class RollingWindowTrainer:
         self,
         save_models: bool = False,
         verbose: bool = True,
+        max_prediction_dates: Optional[int] = None,
+        prediction_step: int = 1,
     ) -> pd.DataFrame:
         """
         Run rolling window training and generate out-of-sample predictions.
@@ -78,6 +81,11 @@ class RollingWindowTrainer:
             Whether to save trained models for each date
         verbose : bool, default=True
             Whether to print progress
+        max_prediction_dates : int, optional
+            Maximum number of prediction dates (default: all available dates)
+            If specified, only predict the last N dates
+        prediction_step : int, default=1
+            Step size for prediction dates (1 = every date, 2 = every other date, etc.)
             
         Returns
         -------
@@ -98,13 +106,39 @@ class RollingWindowTrainer:
                 f"but only have {len(dates)} months."
             )
         
+        # Determine end index based on max_prediction_dates
+        end_idx = len(dates)
+        if max_prediction_dates is not None:
+            end_idx = min(end_idx, start_idx + max_prediction_dates)
+        
+        # Generate prediction indices with step
+        prediction_indices = list(range(start_idx, end_idx, prediction_step))
+        
         logger.info(f"Starting rolling window training from date index {start_idx}")
-        logger.info(f"Total prediction dates: {len(dates) - start_idx}")
+        logger.info(f"Total available dates: {len(dates) - start_idx}")
+        logger.info(f"Prediction dates: {len(prediction_indices)} (step={prediction_step})")
+        if max_prediction_dates is not None:
+            logger.info(f"Limited to last {max_prediction_dates} dates")
         
         all_predictions = []
         
-        for i in range(start_idx, len(dates)):
+        # Create progress bar for prediction dates
+        date_pbar = tqdm(
+            enumerate(prediction_indices),
+            total=len(prediction_indices),
+            desc="预测日期",
+            ncols=100,
+            leave=True
+        )
+        
+        for date_idx, i in date_pbar:
             test_date = dates[i]
+            
+            # Update progress bar with current date
+            date_pbar.set_description(f"日期 {test_date.strftime('%Y-%m')}")
+            date_pbar.set_postfix({
+                '进度': f"{date_idx+1}/{len(prediction_indices)}"
+            })
             
             # Define training window
             train_end_idx = i - 1
@@ -169,16 +203,41 @@ class RollingWindowTrainer:
                     return_dict=True,
                 )
                 
+                if 'X' not in data_dict or len(data_dict['X']) == 0:
+                    logger.warning(f"No test data for {test_date}, skipping predictions")
+                    continue
+                
                 X_test = data_dict['X']
                 y_test = data_dict.get('y', None)
                 assets_test = data_dict['assets']
                 
+                if verbose:
+                    logger.info(f"Test data for {test_date}: X shape={X_test.shape}, assets={len(assets_test)}")
+                
                 predictions = model.predict(X_test)
+                
+                if predictions is None or len(predictions) == 0:
+                    logger.warning(f"Model returned empty/None predictions for {test_date}")
+                    continue
+                
+                if not isinstance(predictions, np.ndarray):
+                    logger.warning(f"Predictions is not numpy array for {test_date}: {type(predictions)}")
+                    predictions = np.array(predictions)
+                
+                # Update progress bar
+                date_pbar.set_postfix({
+                    '进度': f"{date_idx+1}/{len(prediction_indices)}",
+                    '预测数': len(predictions)
+                })
                 
                 if verbose:
                     logger.info(f"Generated {len(predictions)} predictions")
                 
                 # Store results
+                if len(assets_test) != len(predictions):
+                    logger.error(f"Mismatch: {len(assets_test)} assets but {len(predictions)} predictions for {test_date}")
+                    continue
+                
                 for asset, pred, actual in zip(assets_test, predictions, y_test if y_test is not None else [None]*len(predictions)):
                     all_predictions.append({
                         'date': test_date,
@@ -193,7 +252,22 @@ class RollingWindowTrainer:
                 
             except Exception as e:
                 logger.error(f"Failed to generate predictions for {test_date}: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
                 continue
+        
+        # Close progress bar
+        date_pbar.close()
+        
+        # Debug: log prediction status
+        logger.info(f"Total prediction attempts: {len(prediction_indices)}")
+        logger.info(f"Successful predictions collected: {len(all_predictions)}")
+        
+        if len(all_predictions) == 0:
+            logger.warning("No predictions were collected. Possible reasons:")
+            logger.warning("  1. All prediction attempts failed (check errors above)")
+            logger.warning("  2. Model.predict() returned empty results")
+            logger.warning("  3. Data loading issues for test dates")
         
         # Convert to DataFrame
         predictions_df = pd.DataFrame(all_predictions)

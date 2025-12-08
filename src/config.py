@@ -31,16 +31,16 @@ class TrainingConfig:
 
 @dataclass
 class TransformerConfig:
-    """Transformer model hyperparameters."""
-    d_model: int = 64
-    nhead: int = 4
-    num_layers: int = 2
+    """Transformer model hyperparameters (aligned with Optimized TFA)."""
+    d_model: int = 64  # Same as Optimized TFA
+    nhead: int = 4  # Same as Optimized TFA
+    num_layers: int = 2  # Same as Optimized TFA (encoder layers)
     dim_feedforward: int = 256
     dropout: float = 0.1
-    lr: float = 1e-3
+    lr: float = 5e-4  # Same as Optimized TFA (was 1e-3)
     weight_decay: float = 1e-4
     batch_size: int = 128
-    epochs: int = 50
+    epochs: int = 50  # Same as Optimized TFA
     early_stopping_patience: int = 5
     device: str = 'cpu'  # 'cpu' or 'cuda'
 

@@ -19,6 +19,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import Optional, Dict, Tuple
 import logging
+from sklearn.preprocessing import StandardScaler
+from tqdm import tqdm
 
 from .nn_utils import PositionalEncoding
 
@@ -98,6 +100,7 @@ class TemporalFactorAutoencoder(nn.Module):
         self.encoder = nn.TransformerEncoder(
             encoder_layer,
             num_layers=n_encoder_layers,
+            enable_nested_tensor=False,  # Disable nested tensor when norm_first=True
         )
         
         # ===== Dynamic Factor Weight Generator (KEY INNOVATION!) =====
@@ -430,25 +433,56 @@ class TFAPredictor:
         
         self.training_history = []
         self.best_model_state = None
+        self.quantile_boundaries = None  # 存储全局quantile边界
+        self.scaler = StandardScaler()  # 数据标准化
     
-    def _prepare_labels(self, y: np.ndarray) -> torch.Tensor:
+    def _compute_quantile_boundaries(self, y: np.ndarray) -> np.ndarray:
         """
-        Convert continuous returns to quantile labels.
+        Compute global quantile boundaries from training data.
         
         Args:
             y: (n_samples,) - Continuous returns
         
         Returns:
+            boundaries: (n_classes + 1,) - Quantile boundaries
+        """
+        quantiles = np.linspace(0, 1, self.n_classes + 1)
+        boundaries = np.quantile(y, quantiles)
+        return boundaries
+    
+    def _prepare_labels(self, y: np.ndarray, boundaries: Optional[np.ndarray] = None) -> torch.Tensor:
+        """
+        Convert continuous returns to quantile labels using pre-computed boundaries.
+        
+        Args:
+            y: (n_samples,) - Continuous returns
+            boundaries: (n_classes + 1,) - Quantile boundaries (if None, use stored)
+        
+        Returns:
             labels: (n_samples,) - Quantile labels [0, n_classes)
         """
-        # Compute quantiles
-        quantiles = np.linspace(0, 1, self.n_classes + 1)
-        thresholds = np.quantile(y, quantiles[1:-1])
+        if boundaries is None:
+            boundaries = self.quantile_boundaries
         
-        # Assign labels
+        if boundaries is None:
+            # Fallback: compute from current batch (not ideal but backward compatible)
+            quantiles = np.linspace(0, 1, self.n_classes + 1)
+            boundaries = np.quantile(y, quantiles)
+            logger.warning("Using batch-level quantiles. Should compute global quantiles in fit().")
+        
+        # Assign labels based on boundaries
         labels = np.zeros_like(y, dtype=np.int64)
-        for i, threshold in enumerate(thresholds):
-            labels[y > threshold] = i + 1
+        for i in range(len(boundaries) - 1):
+            if i == 0:
+                # First bin: <= boundary[1]
+                mask = y <= boundaries[i+1]
+            elif i == len(boundaries) - 2:
+                # Last bin: > boundary[-2]
+                mask = y > boundaries[i]
+            else:
+                # Middle bins: boundaries[i] < y <= boundaries[i+1]
+                mask = (y > boundaries[i]) & (y <= boundaries[i+1])
+            labels[mask] = i
         
         return torch.LongTensor(labels)
     
@@ -470,13 +504,33 @@ class TFAPredictor:
             y_val: Validation targets
             verbose: Whether to print progress
         """
-        # Convert to tensors
-        X_train = torch.FloatTensor(X).to(self.device)
-        y_train = self._prepare_labels(y).to(self.device)
+        # Compute global quantile boundaries from training data
+        if self.quantile_boundaries is None:
+            self.quantile_boundaries = self._compute_quantile_boundaries(y)
+            if verbose:
+                logger.info(f"Computed quantile boundaries: {self.quantile_boundaries}")
+                logger.info(f"  Range: [{self.quantile_boundaries[0]:.4f}, {self.quantile_boundaries[-1]:.4f}]")
+        
+        # Normalize input data
+        n_samples, seq_len, n_features = X.shape
+        X_flat = X.reshape(-1, n_features)
+        X_flat_scaled = self.scaler.fit_transform(X_flat)
+        X_scaled = X_flat_scaled.reshape(n_samples, seq_len, n_features)
+        
+        # Convert to tensors using global boundaries
+        X_train = torch.FloatTensor(X_scaled).to(self.device)
+        y_train = self._prepare_labels(y, boundaries=self.quantile_boundaries).to(self.device)
         
         if X_val is not None and y_val is not None:
-            X_val_tensor = torch.FloatTensor(X_val).to(self.device)
-            y_val_tensor = self._prepare_labels(y_val).to(self.device)
+            # Normalize validation data using training scaler
+            n_val_samples, val_seq_len, val_n_features = X_val.shape
+            X_val_flat = X_val.reshape(-1, val_n_features)
+            X_val_flat_scaled = self.scaler.transform(X_val_flat)
+            X_val_scaled = X_val_flat_scaled.reshape(n_val_samples, val_seq_len, val_n_features)
+            
+            X_val_tensor = torch.FloatTensor(X_val_scaled).to(self.device)
+            # Use same boundaries for validation
+            y_val_tensor = self._prepare_labels(y_val, boundaries=self.quantile_boundaries).to(self.device)
             use_validation = True
         else:
             use_validation = False
@@ -484,7 +538,16 @@ class TFAPredictor:
         best_val_loss = float('inf')
         patience_counter = 0
         
-        for epoch in range(self.epochs):
+        # Create progress bar for epochs
+        epoch_pbar = tqdm(
+            range(self.epochs),
+            desc="Epochs",
+            disable=not verbose,
+            ncols=100,
+            leave=True
+        )
+        
+        for epoch in epoch_pbar:
             self.model.train()
             
             # Mini-batch training
@@ -542,6 +605,14 @@ class TFAPredictor:
                     **{f'val_{k}': v for k, v in val_loss_dict.items()},
                 })
                 
+                # Update progress bar
+                epoch_pbar.set_postfix({
+                    'Train': f"{avg_losses['total']:.4f}",
+                    'Val': f"{val_loss_value:.4f}",
+                    'Best': f"{best_val_loss:.4f}",
+                    'Patience': patience_counter
+                })
+                
                 if verbose and (epoch + 1) % 5 == 0:
                     logger.info(
                         f"Epoch {epoch+1}/{self.epochs} | "
@@ -567,6 +638,7 @@ class TFAPredictor:
                         logger.info(f"Early stopping at epoch {epoch+1}")
                     # Restore best model
                     self.model.load_state_dict(self.best_model_state)
+                    epoch_pbar.close()
                     break
             else:
                 self.training_history.append({
@@ -575,11 +647,19 @@ class TFAPredictor:
                     **{f'train_{k}': v for k, v in avg_losses.items()},
                 })
                 
+                # Update progress bar
+                epoch_pbar.set_postfix({
+                    'Train': f"{avg_losses['total']:.4f}"
+                })
+                
                 if verbose and (epoch + 1) % 5 == 0:
                     logger.info(
                         f"Epoch {epoch+1}/{self.epochs} | "
                         f"Loss: {avg_losses['total']:.4f}"
                     )
+        
+        # Close progress bar
+        epoch_pbar.close()
     
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -592,16 +672,34 @@ class TFAPredictor:
             predictions: (n_samples,) - Expected returns
         """
         self.model.eval()
-        X_tensor = torch.FloatTensor(X).to(self.device)
+        
+        # Normalize input data using training scaler
+        n_samples, seq_len, n_features = X.shape
+        X_flat = X.reshape(-1, n_features)
+        X_flat_scaled = self.scaler.transform(X_flat)
+        X_scaled = X_flat_scaled.reshape(n_samples, seq_len, n_features)
+        
+        X_tensor = torch.FloatTensor(X_scaled).to(self.device)
         
         with torch.no_grad():
             probs = self.model.predict_proba(X_tensor)
         
         # Convert class probabilities to expected return
-        # Use class midpoints as return values
-        class_values = torch.linspace(-0.1, 0.1, self.n_classes, device=self.device)
-        expected_returns = (probs * class_values).sum(dim=-1)
+        # Use actual quantile boundary midpoints as class values
+        if self.quantile_boundaries is not None:
+            # Compute midpoints of each quantile bin
+            class_values = []
+            for i in range(len(self.quantile_boundaries) - 1):
+                midpoint = (self.quantile_boundaries[i] + self.quantile_boundaries[i+1]) / 2
+                class_values.append(midpoint)
+            class_values = torch.tensor(class_values, dtype=torch.float32, device=self.device)
+        else:
+            # Fallback: use wider range based on typical return distribution
+            # Most stock returns are in [-0.3, 0.3] range monthly
+            logger.warning("No quantile boundaries found. Using default range [-0.2, 0.2]")
+            class_values = torch.linspace(-0.2, 0.2, self.n_classes, device=self.device)
         
+        expected_returns = (probs * class_values).sum(dim=-1)
         return expected_returns.cpu().numpy()
     
     def get_params(self) -> Dict:

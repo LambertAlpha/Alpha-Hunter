@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from typing import Tuple, Optional, Dict
+from scipy.stats import rankdata
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -31,10 +32,12 @@ class SequenceDataLoader:
     def __init__(
         self,
         pca_path: str | Path,
+        returns_path: Optional[str | Path] = None,
         sequence_length: int = 12,
         forward_fill_limit: int = 3,
     ):
         self.pca_path = Path(pca_path)
+        self.returns_path = Path(returns_path) if returns_path else None
         self.sequence_length = sequence_length
         self.forward_fill_limit = forward_fill_limit
         
@@ -61,6 +64,40 @@ class SequenceDataLoader:
         
         # Convert date to datetime
         df['date'] = pd.to_datetime(df['date'])
+        
+        # Merge returns if provided separately
+        if self.returns_path:
+            returns_path = self.returns_path
+            if not returns_path.exists():
+                raise FileNotFoundError(f"Returns file not found: {returns_path}")
+            
+            returns = pd.read_csv(returns_path)
+            if not {'date', 'asset', 'return'}.issubset(returns.columns):
+                raise ValueError("Returns file must contain 'date', 'asset', and 'return' columns")
+            
+            returns['date'] = pd.to_datetime(returns['date'])
+            
+            if 'return' in df.columns:
+                logger.info("Return column already exists in PCA file; skip merging external returns.")
+            else:
+                df = df.merge(
+                    returns[['date', 'asset', 'return']],
+                    on=['date', 'asset'],
+                    how='left',
+                    suffixes=('', '_ret'),
+                )
+            
+            # Normalize return column name if merge created suffix
+            if 'return_ret' in df.columns and 'return' not in df.columns:
+                df = df.rename(columns={'return_ret': 'return'})
+            
+            if 'return' in df.columns:
+                coverage = df['return'].notna().mean() * 100
+                logger.info(f"Merged returns from {returns_path} (coverage: {coverage:.2f}% rows with returns)")
+            else:
+                logger.warning("Returns merge did not produce a 'return' column; targets will be missing.")
+        elif 'return' not in df.columns:
+            logger.warning("No 'return' column found and no returns_path provided; training with targets will fail.")
         
         # Sort by date and asset
         df = df.sort_values(['date', 'asset']).reset_index(drop=True)
@@ -176,7 +213,19 @@ class SequenceDataLoader:
         # Get targets if requested
         targets = None
         if include_target and has_return_column:
-            targets = target_df.loc[valid_assets, 'return'].values
+            returns = target_df.loc[valid_assets, 'return'].values
+            
+            # Apply rank-based transformation (cross-sectional ranking per date)
+            # Convert returns to percentile ranks [0, 1]
+            # This makes the optimization landscape smoother and aligns with IC metric
+            ranks = rankdata(returns)  # Ranking: [1, 2, 3, ..., n]
+            targets = ranks / len(ranks)  # Normalize to [0, 1]
+            
+            logger.debug(
+                f"Rank-based transformation for {target_date}: "
+                f"returns range [{returns.min():.4f}, {returns.max():.4f}] -> "
+                f"ranks range [{targets.min():.4f}, {targets.max():.4f}]"
+            )
 
         if return_dict:
             result = {
@@ -249,7 +298,9 @@ class SequenceDataLoader:
                 'min': returns.min(),
                 'max': returns.max(),
                 'n_valid': len(returns),
+                'coverage_pct': 100 * len(returns) / len(self.df),
             }
+        else:
+            stats['return_stats'] = None
         
         return stats
-
