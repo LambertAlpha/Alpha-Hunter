@@ -25,6 +25,12 @@
 | MLP baseline | 标准化 | 同 MLP 架构 | `results/mlp_baseline/predictions.csv`，`stats.json`，`portfolio.csv` | 指标未整理（基线参考） |
 | Random Forest | 标准化（配置） | n_estimators=100, max_depth=10, min_samples_split=10, n_jobs=-1 | 近期无产出文件 | — |
 
+## 11 因子最新结果（使用旧 PCA 文件 `data/pca/old/pca_feature_store.csv`，rank 目标）
+| 模型 | 核心配置 | 指标 | 文件 |
+| --- | --- | --- | --- |
+| Transformer | d_model=64, n_heads=4, layers=2, ff=256, dropout=0.1, lr=5e-4, batch=128, epochs=50 | IC 0.0361，ICIR 0.2706，IC>0 62.96%，LS Sharpe 0.8956，MaxDD 0.6287，Turnover 0.7686 | `results/transformer_oldpca/transformer/stats_20251208_111045.json` |
+| TFA 优化版 | d_model=64, heads=4, enc_layers=2, latent=3, lr=5e-4, alpha/beta/gamma=0.05/0.01/0.005, epochs=50 | IC 0.0218，ICIR 0.2450，IC>0 59.26%，LS Sharpe 0.7905，MaxDD 0.4785，Turnover 0.8330 | `results/tfa_oldpca/stats_20251208_125607.json` |
+
 ## 关键对比（表格/图表可直接引用）
 - Transformer vs TFA（rank-based，同配置）：详见 `RESULTS_COMPARISON.md`
   - IC: 0.0789 vs 0.0346；ICIR: 0.3315 vs 0.3191；IC>0: 60% vs 70%
