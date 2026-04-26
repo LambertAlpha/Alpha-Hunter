@@ -7,6 +7,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Transformer | 0.0361 | 0.2706 | 62.96% | 0.8956 | 0.6287 | 0.7686 | `results/transformer_oldpca/transformer/stats_20251208_111045.json` |
 | TFA 优化版 | 0.0218 | 0.2450 | 59.26% | 0.7905 | 0.4785 | 0.8330 | `results/tfa_oldpca/stats_20251208_125607.json` |
+| Random Forest | 0.0481 | 0.2574 | 50.0% | 0.9803 | 0.3042 | 0.6819 | `report/11pca/stats/random_forest_stats_oldpca.json` |
 | Ridge | 0.0212 | 0.1854 | 62.96% | 0.8224 | 0.9953 | 0.8565 | `report/11pca/stats/ridge_stats_oldpca.json` |
 | MLP | -0.0020 | -0.0210 | 50.62% | -0.0756 | 1.0073 | 0.8271 | `report/11pca/stats/mlp_stats_oldpca.json` |
 

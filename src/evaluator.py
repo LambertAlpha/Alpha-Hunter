@@ -113,6 +113,9 @@ class PerformanceEvaluator:
         short_pct: float = 0.1,
         transaction_cost: float = 0.003,
         weighting: str = 'equal',
+        long_weight: float = 0.5,
+        short_weight: float = 0.5,
+        min_ls_return: Optional[float] = -0.999,
     ) -> pd.DataFrame:
         """
         Compute long-short portfolio returns from predictions.
@@ -129,12 +132,24 @@ class PerformanceEvaluator:
             Transaction cost per side (30 bps default)
         weighting : str, default='equal'
             Weighting scheme: 'equal' or 'value'
+        long_weight : float, default=0.5
+            Capital weight allocated to the long leg (fraction of total capital)
+        short_weight : float, default=0.5
+            Capital weight allocated to the short leg (fraction of total capital)
+        min_ls_return : float or None, default=-0.999
+            Floor for single-period long-short net return to enforce capital constraint.
+            Set to None to disable clipping.
             
         Returns
         -------
         portfolio_df : pd.DataFrame
             DataFrame with columns: date, long_ret, short_ret, ls_ret, ls_ret_net
         """
+        if long_weight < 0 or short_weight < 0:
+            raise ValueError("long_weight and short_weight must be non-negative")
+        if (long_weight + short_weight) == 0:
+            raise ValueError("At least one of long_weight or short_weight must be positive")
+
         portfolio_records = []
         prev_long_assets = set()
         prev_short_assets = set()
@@ -166,7 +181,7 @@ class PerformanceEvaluator:
                 raise ValueError(f"Unknown weighting: {weighting}")
             
             # Long-short return (gross)
-            ls_ret = long_ret - short_ret
+            ls_ret = long_weight * long_ret - short_weight * short_ret
             
             # Compute turnover
             long_turnover = len(long_assets - prev_long_assets) / n_long if len(prev_long_assets) > 0 else 1.0
@@ -174,8 +189,11 @@ class PerformanceEvaluator:
             avg_turnover = (long_turnover + short_turnover) / 2
             
             # Net return after transaction costs
-            cost = avg_turnover * transaction_cost * 2  # Both sides
+            weighted_turnover = long_turnover * long_weight + short_turnover * short_weight
+            cost = weighted_turnover * transaction_cost * 2  # close + open on both legs
             ls_ret_net = ls_ret - cost
+            if min_ls_return is not None:
+                ls_ret_net = max(ls_ret_net, min_ls_return)
             
             portfolio_records.append({
                 'date': date,
@@ -513,4 +531,3 @@ class PerformanceEvaluator:
             logger.info(f"Performance plot saved to {save_path}")
         
         plt.show()
-

@@ -19,6 +19,15 @@ LS Sharpe: 0.7905
 MaxDD: 0.4785
 Turnover: 0.8330
 ```
+- Random Forest (max_prediction_dates=20): `report/11pca/stats/random_forest_stats_oldpca.json`
+```
+IC_mean: 0.0481
+IC_IR: 0.2574
+IC>0: 50.0%
+LS Sharpe: 0.9803
+MaxDD: 0.3042
+Turnover: 0.6819
+```
 - Ridge: `report/11pca/stats/ridge_stats_oldpca.json`
 ```
 IC_mean: 0.0212

@@ -64,3 +64,13 @@ feature/*.csv
 *.out
 *.synctex.gz
 *.toc
+*.bak
+*.bak2
+
+# Final paper process docs (not the source/output)
+final_paper/FINAL_FORMAT_UPDATE.md
+final_paper/LAYOUT_IMPROVEMENTS.md
+final_paper/UPDATE_SUMMARY.md
+
+# Stray downloaded duplicates
+*(1).docx
