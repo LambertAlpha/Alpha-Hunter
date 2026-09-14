@@ -174,6 +174,8 @@ def run_experiment(model_name: str, config: Config, output_dir: Path):
                         data_sha256={name: sha256_file(Path(path)) for name, path in
                                      [('pca', config.data.pca_path), ('returns', config.data.returns_path)] if path},
                         feature_names=loader.feature_columns, sequence_length=loader.sequence_length,
+                        prediction_universe='last input feature-month membership with complete preceding history',
+                        test_label_policy='require returns for every eligible asset; missing labels fail the month',
                         dataset_statistics={k: str(v) if k == 'date_range' else v for k, v in loader.get_statistics().items()})
         write_json(output_dir / 'run.json', metadata)
         trainer = RollingWindowTrainer(loader, get_model_factory(model_name, config, data_loader=loader),

@@ -56,12 +56,37 @@ class CLIIntegrationTests(unittest.TestCase):
         X = loader.build_sequences(pd.Timestamp(first.date.iloc[0]), return_dict=True)['X']
         np.testing.assert_allclose(predictor.predict(X), first.prediction.to_numpy(), rtol=1e-6)
         self.assertEqual(predictor.feature_names, loader.feature_columns)
+        # The exact same forecast must be possible without any target/future
+        # feature rows or labels, using a restored checkpoint and raw history.
+        history = pd.read_csv(self.config.data.pca_path)
+        history = history[pd.to_datetime(history.date) < pd.Timestamp(first.date.iloc[0])].drop(columns='return')
+        path = self.root / 'past_features_only.csv'
+        history.to_csv(path, index=False)
+        past = SequenceDataLoader(path, sequence_length=3, forward_fill_limit=0)
+        batch = past.build_sequences(pd.Timestamp(first.date.iloc[0]), include_target=False, return_dict=True)
+        np.testing.assert_allclose(predictor.predict(batch['X']), first.prediction.to_numpy(), rtol=1e-6)
 
     def test_sparse_dates_get_no_portfolio_statistics(self):
         self.config.training.prediction_step = 2
         result = run_experiment('ridge', self.config, self.root / 'sparse')
         self.assertIn('portfolio_unavailable', result)
         self.assertFalse((self.root / 'sparse' / 'portfolio.csv').exists())
+
+    def test_missing_test_label_partial_run_has_no_portfolio(self):
+        frame = pd.read_csv(self.config.data.pca_path)
+        first_test = sorted(frame.date.unique())[-2]
+        frame.loc[(frame.date == first_test) & (frame.asset == 'A000'), 'return'] = np.nan
+        frame.to_csv(self.config.data.pca_path, index=False)
+        self.config.training.allow_skips = True
+        path = self.root / 'partial'
+        summary = run_experiment('ridge', self.config, path)
+        self.assertIn('portfolio_unavailable', summary)
+        self.assertFalse((path / 'portfolio.csv').exists())
+        self.assertEqual(json.loads((path / 'run.json').read_text())['status'], 'partial')
+        splits = json.loads((path / 'split_status.json').read_text())
+        self.assertEqual([s['status'] for s in splits], ['failed', 'success'])
+        self.assertEqual(splits[0]['coverage']['missing_return_assets'], ['A000'])
+        self.assertEqual(splits[1]['val_missing_returns'][first_test], ['A000'])
 
     def test_failed_run_is_recorded_and_exits_nonzero(self):
         result = subprocess.run([sys.executable, 'train.py', '--model', 'ridge', '--config', str(self.config_path),

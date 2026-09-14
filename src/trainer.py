@@ -70,10 +70,17 @@ class RollingWindowTrainer:
                           val_dates=[str(d.date()) for d in val_dates], stage='data')
             try:
                 X, y, _ = self._build_dataset(train_dates)
+                status['train_missing_returns'] = self._missing_returns(train_dates)
                 X_val, y_val, _ = self._build_dataset(val_dates) if val_dates else (None, None, None)
+                status['val_missing_returns'] = self._missing_returns(val_dates)
                 test = self._date_data(date)
                 status.update(train_samples=len(X), validation_samples=len(X_val) if X_val is not None else 0,
-                              test_samples=len(test['X']), coverage=test.get('coverage', {}), stage='fit')
+                              test_samples=len(test['X']), coverage=test.get('coverage', {}), stage='label_coverage')
+                missing = status['coverage'].get('missing_return_assets', [])
+                if missing:
+                    raise ValueError(f'Missing test returns for {len(missing)} eligible asset(s) at {date.date()}: '
+                                     f'{missing[:10]}. Resolve labels upstream; do not select on future availability.')
+                status['stage'] = 'fit'
                 factory_params = inspect.signature(self.model_factory).parameters
                 model = (self.model_factory(rolling_index=index) if 'rolling_index' in factory_params
                          else self.model_factory())
@@ -132,6 +139,10 @@ class RollingWindowTrainer:
         batches = [self._date_data(d, use_cache) for d in dates]
         X, y, assets = [np.concatenate([b[key] for b in batches]) for key in ['X', 'y', 'assets']]
         return X, y, assets
+
+    def _missing_returns(self, dates) -> dict:
+        return {str(d.date()): missing for d in dates
+                if (missing := self._date_data(d).get('coverage', {}).get('missing_return_assets', []))}
 
     def evaluate_predictions(self, predictions_df: pd.DataFrame,
                              metrics: Optional[list[str]] = None) -> dict:

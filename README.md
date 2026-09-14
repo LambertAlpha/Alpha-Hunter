@@ -67,6 +67,10 @@ axis ordering in the published pipeline. The current code corrects these issues 
 regression tests. A second pass corrects portfolio accounting, model checkpointing,
 rolling error handling and configuration propagation, and tests gated/ungated TFA on a
 controlled synthetic panel. These engineering checks are separate from market evidence.
+A further pass removes target-month membership from prediction eligibility, preserves
+separate delisting-return records, rejects incomplete test labels, and supports next-month
+inference from observed features alone. See the [audit](docs/evaluation-audit.md#third-maintenance-pass-prediction-universe-integrity)
+for the remaining data assumptions.
 **The historical Sharpe, drawdown, and “66% lower drawdown” claims are not
 validated performance results.** Corrected full-data experiments have not been run, and some
 historical comparisons also use different evaluation horizons. Details and evidence are in

@@ -97,3 +97,31 @@ Turnover follows the [half-L1 risky-trade convention](https://www.cvxportfolio.c
 Inference artifacts follow the [PyTorch model saving/loading guidance](https://docs.pytorch.org/tutorials/beginner/saving_loading_models.html).
 The new [engineering experiment report](engineering-study-2026-09-14.md) contains the
 controlled checks and negative findings. Original-data research results remain unverified.
+
+## Third maintenance pass: prediction-universe integrity
+
+Reviewing `5ae5266` exposed a remaining dependency on future data availability: complete
+historical sequences were intersected with target-month feature rows, and missing target
+returns could silently remove assets before rolling prediction. In addition, a left join
+discarded returns for assets lacking same-month feature records. A missing or delisted name
+could therefore disappear from the measured basket even when its history was available.
+
+The current loader fixes prediction eligibility using last-input-month feature membership
+and complete preceding history. It retains a separate return panel, including label-only
+records. Training and validation can use available historical labels with asset exclusions
+recorded; any excluded test label instead fails that month before fitting. Explicit partial
+runs have no portfolio statistics. Inference works one month beyond observed features
+without inserting fictitious future rows.
+
+The focused initial regressions produced four failures and two errors in seven cases;
+the corrected behaviors include target-row deletion invariance, future reappearance,
+retained −100% delisting labels and next-month inference. An additional calendar test
+ensures unrelated old/future returns cannot move the rolling feature calendar. Integration
+tests check missing-label partial runs and restored-checkpoint predictions using only past
+feature rows with every return label removed.
+
+This addresses one concrete selection mechanism. It does **not** certify upstream feature
+availability, tradability, corporate-action adjustments, or the absence of historical-label
+selection bias in training. Missing delisting returns are a substantive empirical concern;
+see [Shumway (1997), The Delisting Bias in CRSP Data](https://doi.org/10.1111/j.1540-6261.1997.tb03818.x).
+No correction value from that paper is imported, and no financial-performance gain is claimed.

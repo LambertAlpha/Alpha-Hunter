@@ -53,15 +53,21 @@ class SequenceDataLoader:
         # Extract metadata
         self.feature_columns = [col for col in self.df.columns if col.startswith('pca_')]
         self.n_features = len(self.feature_columns)
-        self.dates = sorted(self.df['date'].unique())
-        self.assets = sorted(self.df['asset'].unique())
+        self.dates = self.feature_dates.tolist()
+        next_month = self.feature_dates[-1] + pd.offsets.MonthBegin()
+        if self.return_df is not None:
+            last_members = self.feature_df.loc[self.feature_df.date == self.feature_dates[-1], 'asset']
+            has_next_labels = self.return_df.date.eq(next_month) & self.return_df.asset.isin(last_members)
+            if has_next_labels.any():
+                self.dates.append(next_month)
+        self.assets = sorted(self.feature_df['asset'].unique())
         
         logger.info(f"Loaded {len(self.df)} records")
         logger.info(f"Features: {self.n_features}, Dates: {len(self.dates)}, Assets: {len(self.assets)}")
     
     def _load_and_validate(self) -> pd.DataFrame:
         """Load and validate PCA feature store."""
-        def read_panel(path):
+        def read_panel(path) -> pd.DataFrame:
             frame = pd.read_csv(path, dtype={'asset': str})
             if frame.empty or not {'date', 'asset'}.issubset(frame.columns):
                 raise ValueError("Nonempty panel requires date and asset columns")
@@ -78,23 +84,33 @@ class SequenceDataLoader:
         features = [col for col in df if col.startswith('pca_')]
         if not features:
             raise ValueError("At least one pca_ feature is required")
+        # Feature membership and labels have different availability dates. Keep
+        # them separate: a delisting return may have no same-month feature row.
+        self.feature_df = df.reindex(columns=['date', 'asset', *features])
+        self.return_df: Optional[pd.DataFrame] = df.reindex(columns=['date', 'asset', 'return']) if 'return' in df else None
         if self.returns_path:
             if 'return' in df:
                 raise ValueError("Choose embedded returns or returns_path, not both")
             returns = read_panel(self.returns_path)
             if 'return' not in returns:
                 raise ValueError("Returns panel requires a return column")
-            df = df.merge(returns[['date', 'asset', 'return']], how='left',
-                          on=['date', 'asset'], validate='one_to_one')
-        for column in features + (['return'] if 'return' in df else []):
-            df[column] = pd.to_numeric(df[column], errors='raise')
-            if np.isinf(df[column].to_numpy()).any():
+            self.return_df = returns.reindex(columns=['date', 'asset', 'return'])
+        for column in features:
+            self.feature_df[column] = pd.to_numeric(self.feature_df[column], errors='raise')
+            if np.isinf(self.feature_df[column].to_numpy()).any():
                 raise ValueError(f"Infinite values in {column}")
-        if 'return' in df and (df['return'] < -1).any():
-            raise ValueError("Asset simple returns must be >= -1")
-        months = pd.DatetimeIndex(sorted(df.date.unique())).to_period('M').asi8
+        self.feature_dates = pd.DatetimeIndex(sorted(self.feature_df.date.unique()))
+        months = self.feature_dates.to_period('M').asi8
         if len(months) > 1 and not (np.diff(months) == 1).all():
             raise ValueError("Missing calendar months in the PCA panel")
+        df = self.feature_df
+        if self.return_df is not None:
+            self.return_df['return'] = pd.to_numeric(self.return_df['return'], errors='raise')
+            if np.isinf(self.return_df['return'].to_numpy()).any() or (self.return_df['return'] < -1).any():
+                raise ValueError("Asset simple returns must be finite or missing and >= -1")
+            # The combined view retains all label records for diagnostics;
+            # only feature_df is allowed to determine prediction eligibility.
+            df = df.merge(self.return_df, how='outer', on=['date', 'asset'], validate='one_to_one')
         return df.sort_values(['date', 'asset']).reset_index(drop=True)
 
     @overload
@@ -129,7 +145,7 @@ class SequenceDataLoader:
         return_dict: bool = False,
     ) -> Tuple[np.ndarray, np.ndarray] | Tuple[np.ndarray, np.ndarray, np.ndarray] | Dict[str, Any]:
         """
-        Build sequences ending at target_date (vectorized for performance).
+        Build sequences strictly before target_date using past feature membership.
 
         Parameters
         ----------
@@ -155,23 +171,21 @@ class SequenceDataLoader:
         """
         # Get sequence dates
         normalized_date = pd.Timestamp(target_date)
-        if not isinstance(normalized_date, pd.Timestamp):
+        if not isinstance(normalized_date, pd.Timestamp) or pd.isna(normalized_date):
             raise ValueError('Target date must not be NaT')
         target_date = normalized_date.to_period('M').to_timestamp()
-        if include_target and 'return' not in self.df:
+        if include_target and self.return_df is None:
             raise ValueError("Supervised sequences require return labels")
-        target_idx = self.dates.index(target_date)
-
-        if target_idx < self.sequence_length:
+        sequence_dates = pd.date_range(end=target_date - pd.offsets.MonthBegin(),
+                                       periods=self.sequence_length, freq='MS')
+        if not sequence_dates.isin(self.feature_dates).all():
             raise ValueError(
-                f"Not enough history for target_date {target_date}. "
-                f"Need at least {self.sequence_length} months."
+                f"Not enough observed feature history for target_date {target_date}. "
+                f"Need the preceding {self.sequence_length} consecutive months."
             )
 
-        sequence_dates = self.dates[target_idx - self.sequence_length : target_idx]
-
         # Vectorized approach: pivot all sequence data at once
-        sequence_data = self.df[self.df['date'].isin(sequence_dates)]
+        sequence_data = self.feature_df[self.feature_df['date'].isin(sequence_dates.tolist())]
 
         # Create multi-index pivot: assets x dates x features
         pivoted = sequence_data.pivot_table(
@@ -206,27 +220,28 @@ class SequenceDataLoader:
                 f"No assets have complete {self.sequence_length}-month history."
             )
 
-        # Get target date data for filtering
-        target_df = self.df[self.df['date'] == target_date].set_index('asset')
-
-        if len(target_df) == 0:
-            raise ValueError(f"No data available for target_date {target_date}")
-
-        # Filter to assets present in target date
-        valid_assets = complete_assets.intersection(target_df.index)
+        # Last observed membership is a documented proxy, not a security master.
+        # Never use target-month rows or future label availability as its input.
+        universe = pd.Index(sequence_data.loc[sequence_data.date == sequence_dates[-1], 'asset'])
+        valid_assets = complete_assets.intersection(universe).sort_values()
 
         if len(valid_assets) == 0:
             raise ValueError(
                 f"No valid sequences found for target_date {target_date}. "
-                f"No complete sequences for assets in target date."
+                f"No complete sequences for assets in the last input month."
             )
 
-        # Further filter by non-missing returns if needed
         eligible_count = len(valid_assets)
-        has_return_column = 'return' in target_df.columns
-        if include_target and has_return_column:
-            # Only keep assets with valid returns
-            valid_returns_mask = target_df.loc[valid_assets, 'return'].notna()
+        missing_return_assets = []
+        target_returns = None
+        if include_target:
+            assert self.return_df is not None
+            target_returns = self.return_df.loc[self.return_df.date == target_date].set_index('asset')['return']
+            target_returns = target_returns.reindex(valid_assets)
+            valid_returns_mask = target_returns.notna()
+            missing_return_assets = pd.Index(valid_assets[~valid_returns_mask]).tolist()
+            # Historical supervised fitting can exclude unavailable labels.
+            # Rolling test evaluation explicitly rejects any such exclusions.
             valid_assets = pd.Index(valid_assets[valid_returns_mask])
 
             if len(valid_assets) == 0:
@@ -250,8 +265,8 @@ class SequenceDataLoader:
         # Get targets if requested
         targets = None
         returns = None
-        if include_target and has_return_column:
-            returns = target_df.loc[valid_assets, 'return'].values
+        if target_returns is not None:
+            returns = target_returns.loc[valid_assets].to_numpy()
             
             # Apply rank-based transformation (cross-sectional ranking per date)
             # Convert returns to percentile ranks [0, 1]
@@ -270,8 +285,11 @@ class SequenceDataLoader:
                 'X': X,
                 'assets': assets,
                 'date': target_date,
-                'coverage': {'target_assets': len(target_df), 'complete_histories': eligible_count,
-                             'included_assets': len(assets)},
+                'coverage': {'universe_date': str((target_date - pd.offsets.MonthBegin()).date()),
+                             'history_universe_assets': len(universe),
+                             'complete_histories': eligible_count,
+                             'included_assets': len(assets),
+                             'missing_return_assets': missing_return_assets},
             }
             if targets is not None:
                 result['y'] = targets
@@ -331,7 +349,8 @@ class SequenceDataLoader:
             'n_assets': len(self.assets),
             'n_features': self.n_features,
             'date_range': (self.dates[0], self.dates[-1]),
-            'avg_assets_per_date': len(self.df) / len(self.dates),
+            'avg_assets_per_date': len(self.feature_df) / len(self.feature_dates),
+            'n_feature_dates': len(self.feature_dates),
             'feature_names': self.feature_columns,
         }
         

@@ -58,13 +58,25 @@ are rejected; −100% is permitted as a total loss. Upstream adjustments must in
 corporate actions and delistings.
 
 Missing features can be forward-filled **within a feature, forward in time only**, limited
-to the input window. `forward_fill_limit: 0` disables filling. An asset needs a complete
-input window and presence in the target month's supplied panel. Supervised construction
-requires returns; absent asset-level labels are excluded and coverage is recorded. This
-filtering can create selection bias: report universe/label exclusions and resolve missing
-or delisted assets upstream. The loader cannot infer a tradable point-in-time universe.
-Inference within the supplied calendar can use `include_target=False` without labels;
-future-month inference beyond the panel is not implemented.
+to the input window. `forward_fill_limit: 0` disables filling. Prediction eligibility
+requires a complete input window and a feature row in the **last input month**, before the
+target month. Target-month feature rows and labels never establish eligibility. This is an
+explicit historical-membership proxy, not a verified tradable security master.
+
+Features and returns are kept separately. A supplied return (including a correctly adjusted
+delisting return) is retained even without same-month PCA features. Separate labels may
+extend evaluation to the month immediately following the last feature month. Earlier or
+distant future label dates do not extend the rolling calendar.
+
+Historical supervised construction excludes missing labels and records the excluded asset
+identifiers. **A rolling test month with any missing eligible return fails before fitting**;
+it cannot silently select a smaller basket or impute a zero return. `--allow-skips` can retain
+other months as partial ranking diagnostics but disables portfolio statistics. Resolve
+missing returns and delistings upstream; the loader does not invent their values.
+
+`include_target=False` needs no labels or target-month placeholder rows. It also supports
+the next month after the feature store ends, provided every preceding input month exists;
+it cannot jump over an unobserved month.
 
 PCA components must be fitted without future observations and remain aligned across
 months (including signs/rotations if PCA is refitted). Merely using preceding feature dates
@@ -108,8 +120,10 @@ Runs write to `output_dir/<unique-run-name>/<model>/`. Existing model run direct
 never overwritten. Check `run.json`: `complete`, `partial`, or `failed`.
 
 - `config.json`: effective settings, including actual feature dimensions.
-- `run.json`: provenance, hashes, dimensions and completion status.
-- `split_status.json`: every planned date, train/validation dates, sample counts, coverage and errors.
+- `run.json`: provenance, hashes, dimensions, universe/label policies and completion status.
+- `split_status.json`: every planned date, train/validation dates, sample counts, coverage,
+  excluded historical-label assets and test errors. Coverage includes the last input month,
+  its universe size, complete-history count and missing return identifiers.
 - `predictions.csv`, `ic.csv`, `stats.json`: raw economic returns, ranking scores and diagnostics.
 - `portfolio.csv`: consecutive-month gross/net returns, half-L1 turnover, traded notional and costs.
 - `last_model.pt` (TFA): architecture, weights, fitted scaler, label boundaries and feature order.
@@ -125,6 +139,27 @@ predictor = TFAPredictor.load("results/demo/five-models/tfa/last_model.pt")
 # X: raw PCA sequences in predictor.feature_names order, matching sequence length
 scores = predictor.predict(X)
 ```
+
+For a forecast without target-month rows or labels:
+
+```python
+import pandas as pd
+from src.data_loader import SequenceDataLoader
+
+# Use the same fill policy as the saved run's config.json.
+loader = SequenceDataLoader("past_features.csv", sequence_length=predictor.seq_len,
+                            forward_fill_limit=0)
+if loader.feature_columns != predictor.feature_names:
+    raise ValueError("Feature order differs from the checkpoint")
+target = loader.feature_dates[-1] + pd.offsets.MonthBegin()
+batch = loader.build_sequences(target, include_target=False, return_dict=True)
+forecast = pd.DataFrame({"date": target, "asset": batch["assets"],
+                         "prediction": predictor.predict(batch["X"])})
+```
+
+The checkpoint's training/validation labels must precede the forecast month. Reusing a
+model fitted on later labels for an earlier forecast would leak information even though
+the input builder is chronological. This API example is not a trading or execution system.
 
 Scores are in training-label units: this pipeline trains on percentile ranks, so a score of
 0.8 is **not** an 80% expected return. Analysis through `TFAAnalyzer(predictor)` applies the
