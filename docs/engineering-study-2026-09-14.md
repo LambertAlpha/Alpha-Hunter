@@ -17,7 +17,7 @@ initially produced 14 failures and one error; added model/rolling cases reproduc
 failures and two errors. Those behaviors now pass. The maintained test suite additionally
 runs all five models, compares date/asset coverage, checks exact repeated-seed predictions,
 reloads checkpoints, verifies CLI precedence, and checks process failure semantics.
-The locked environment also passes scoped Ruff and Pyright checks.
+The 43-test locked-environment suite also passes scoped Ruff and Pyright checks.
 
 ## Controlled experiment protocol
 
@@ -39,9 +39,34 @@ and reports all three variants: ungated, gated, and gated with auxiliary weights
 The ungated graph still benefits from all correctness fixes. It does not reproduce the
 buggy historical experiments. No configuration is retuned after seeing these test results.
 
-Preliminary controlled runs found mean IC near .858 for ungated TFA and .856 for gated
-TFA across the three seeds. Two seeds improved with gating and one degraded. The final
-committed-source rerun and machine-readable evidence are recorded below when published.
+The final run used clean committed source [`079e923`](https://github.com/LambertAlpha/Alpha-Hunter/commit/079e923c6a2165aee1dd7b50ad900720dfffbcc7).
+All 14 experiments completed all six months: **84 fitted rolling models and 1,680
+prediction rows**. All five baseline prediction files exactly match the earlier controlled
+run after the final cleanup; no result was discarded. The source commit also passed
+[Linux CI](https://github.com/LambertAlpha/Alpha-Hunter/actions/runs/34830468624), including
+43 tests, scoped lint and type checks. Local locked-environment checks passed on macOS.
+
+[Machine-readable evidence](../report/engineering_2026_09_14/README.md) includes effective
+configurations, source/data hashes, every split status, predictions, portfolios and metrics.
+
+| Model (seed 42) | Mean IC | Valid test months |
+| --- | ---: | ---: |
+| ridge | 0.8206 | 6 |
+| random_forest | 0.8133 | 6 |
+| mlp | 0.5825 | 6 |
+| transformer | 0.7654 | 6 |
+| tfa | 0.8586 | 6 |
+
+| Base seed | Ungated | Gated + auxiliaries | Gated, prediction only |
+| --- | ---: | ---: | ---: |
+| 13 | 0.8481 | 0.8644 | 0.8536 |
+| 42 | 0.8531 | 0.8586 | 0.8551 |
+| 101 | 0.8724 | 0.8456 | 0.8424 |
+| Mean | 0.8579 | 0.8562 | 0.8504 |
+
+![Three-seed ablation on a synthetic panel](../report/engineering_2026_09_14/ablation_ic.png)
+
+Two seeds improve with gating and one degrades; the three-seed average is slightly lower.
 **This does not demonstrate an average predictive advantage from the gate.** The gate
 repairs the disconnected mechanism; keeping it as the default is a design choice consistent
 with the described model, not a test-set performance selection. The ungated switch remains

@@ -1,0 +1,2382 @@
+{
+  "baseline_ridge": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ],
+  "baseline_random_forest": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ],
+  "baseline_mlp": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ],
+  "baseline_transformer": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ],
+  "baseline_tfa": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ],
+  "ungated_seed13": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ],
+  "gated_seed13": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ],
+  "gated_prediction_only_seed13": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ],
+  "ungated_seed42": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ],
+  "gated_seed42": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ],
+  "gated_prediction_only_seed42": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ],
+  "ungated_seed101": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ],
+  "gated_seed101": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ],
+  "gated_prediction_only_seed101": [
+    {
+      "date": "2011-03-01",
+      "status": "success",
+      "train_dates": [
+        "2010-04-01",
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01"
+      ],
+      "val_dates": [
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-04-01",
+      "status": "success",
+      "train_dates": [
+        "2010-05-01",
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01"
+      ],
+      "val_dates": [
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-05-01",
+      "status": "success",
+      "train_dates": [
+        "2010-06-01",
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01"
+      ],
+      "val_dates": [
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-06-01",
+      "status": "success",
+      "train_dates": [
+        "2010-07-01",
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01"
+      ],
+      "val_dates": [
+        "2011-03-01",
+        "2011-04-01",
+        "2011-05-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-07-01",
+      "status": "success",
+      "train_dates": [
+        "2010-08-01",
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01"
+      ],
+      "val_dates": [
+        "2011-04-01",
+        "2011-05-01",
+        "2011-06-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    },
+    {
+      "date": "2011-08-01",
+      "status": "success",
+      "train_dates": [
+        "2010-09-01",
+        "2010-10-01",
+        "2010-11-01",
+        "2010-12-01",
+        "2011-01-01",
+        "2011-02-01",
+        "2011-03-01",
+        "2011-04-01"
+      ],
+      "val_dates": [
+        "2011-05-01",
+        "2011-06-01",
+        "2011-07-01"
+      ],
+      "stage": "complete",
+      "train_samples": 160,
+      "validation_samples": 60,
+      "test_samples": 20,
+      "coverage": {
+        "target_assets": 20,
+        "complete_histories": 20,
+        "included_assets": 20
+      }
+    }
+  ]
+}

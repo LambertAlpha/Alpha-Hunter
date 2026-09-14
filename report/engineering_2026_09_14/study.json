@@ -1,0 +1,2420 @@
+{
+  "kind": "synthetic engineering validation; not financial evidence",
+  "source_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+  "path_note": "Host-specific repository prefixes replaced by .; configurations and hashes otherwise retained.",
+  "fixture": {
+    "seed": 2026,
+    "months": 20,
+    "assets": 20,
+    "features": 3
+  },
+  "runs": {
+    "baseline_ridge": {
+      "run": {
+        "status": "complete",
+        "model": "ridge",
+        "command": [
+          "train.py",
+          "--model",
+          "all",
+          "--config",
+          "results/synthetic-fixture/config.json",
+          "--output-dir",
+          "results/final-study",
+          "--run-name",
+          "all-models"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 42,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/all-models/ridge",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    },
+    "baseline_random_forest": {
+      "run": {
+        "status": "complete",
+        "model": "random_forest",
+        "command": [
+          "train.py",
+          "--model",
+          "all",
+          "--config",
+          "results/synthetic-fixture/config.json",
+          "--output-dir",
+          "results/final-study",
+          "--run-name",
+          "all-models"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 42,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/all-models/random_forest",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    },
+    "baseline_mlp": {
+      "run": {
+        "status": "complete",
+        "model": "mlp",
+        "command": [
+          "train.py",
+          "--model",
+          "all",
+          "--config",
+          "results/synthetic-fixture/config.json",
+          "--output-dir",
+          "results/final-study",
+          "--run-name",
+          "all-models"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 42,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/all-models/mlp",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    },
+    "baseline_transformer": {
+      "run": {
+        "status": "complete",
+        "model": "transformer",
+        "command": [
+          "train.py",
+          "--model",
+          "all",
+          "--config",
+          "results/synthetic-fixture/config.json",
+          "--output-dir",
+          "results/final-study",
+          "--run-name",
+          "all-models"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 42,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/all-models/transformer",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    },
+    "baseline_tfa": {
+      "run": {
+        "status": "complete",
+        "model": "tfa",
+        "command": [
+          "train.py",
+          "--model",
+          "all",
+          "--config",
+          "results/synthetic-fixture/config.json",
+          "--output-dir",
+          "results/final-study",
+          "--run-name",
+          "all-models"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 42,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/all-models/tfa",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    },
+    "ungated_seed13": {
+      "run": {
+        "status": "complete",
+        "model": "tfa",
+        "command": [
+          "./train_tfa.py",
+          "--config",
+          "./results/synthetic-fixture/config.json",
+          "--seed",
+          "13",
+          "--output-dir",
+          "./results/final-study/ablations/20260914T095503Z-33cae9a3",
+          "--run-name",
+          "ungated-seed13",
+          "--no-factor-gating"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 13,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/ablations/20260914T095503Z-33cae9a3/ungated-seed13/tfa",
+          "save_models": false,
+          "verbose": false,
+          "seed": 13,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": false,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    },
+    "gated_seed13": {
+      "run": {
+        "status": "complete",
+        "model": "tfa",
+        "command": [
+          "./train_tfa.py",
+          "--config",
+          "./results/synthetic-fixture/config.json",
+          "--seed",
+          "13",
+          "--output-dir",
+          "./results/final-study/ablations/20260914T095503Z-33cae9a3",
+          "--run-name",
+          "gated-seed13",
+          "--factor-gating"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 13,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/ablations/20260914T095503Z-33cae9a3/gated-seed13/tfa",
+          "save_models": false,
+          "verbose": false,
+          "seed": 13,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    },
+    "gated_prediction_only_seed13": {
+      "run": {
+        "status": "complete",
+        "model": "tfa",
+        "command": [
+          "./train_tfa.py",
+          "--config",
+          "./results/synthetic-fixture/config.json",
+          "--seed",
+          "13",
+          "--output-dir",
+          "./results/final-study/ablations/20260914T095503Z-33cae9a3",
+          "--run-name",
+          "gated_prediction_only-seed13",
+          "--factor-gating",
+          "--alpha",
+          "0",
+          "--beta",
+          "0",
+          "--gamma",
+          "0"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 13,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/ablations/20260914T095503Z-33cae9a3/gated_prediction_only-seed13/tfa",
+          "save_models": false,
+          "verbose": false,
+          "seed": 13,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.0,
+          "beta": 0.0,
+          "gamma": 0.0,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    },
+    "ungated_seed42": {
+      "run": {
+        "status": "complete",
+        "model": "tfa",
+        "command": [
+          "./train_tfa.py",
+          "--config",
+          "./results/synthetic-fixture/config.json",
+          "--seed",
+          "42",
+          "--output-dir",
+          "./results/final-study/ablations/20260914T095503Z-33cae9a3",
+          "--run-name",
+          "ungated-seed42",
+          "--no-factor-gating"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 42,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/ablations/20260914T095503Z-33cae9a3/ungated-seed42/tfa",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": false,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    },
+    "gated_seed42": {
+      "run": {
+        "status": "complete",
+        "model": "tfa",
+        "command": [
+          "./train_tfa.py",
+          "--config",
+          "./results/synthetic-fixture/config.json",
+          "--seed",
+          "42",
+          "--output-dir",
+          "./results/final-study/ablations/20260914T095503Z-33cae9a3",
+          "--run-name",
+          "gated-seed42",
+          "--factor-gating"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 42,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/ablations/20260914T095503Z-33cae9a3/gated-seed42/tfa",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    },
+    "gated_prediction_only_seed42": {
+      "run": {
+        "status": "complete",
+        "model": "tfa",
+        "command": [
+          "./train_tfa.py",
+          "--config",
+          "./results/synthetic-fixture/config.json",
+          "--seed",
+          "42",
+          "--output-dir",
+          "./results/final-study/ablations/20260914T095503Z-33cae9a3",
+          "--run-name",
+          "gated_prediction_only-seed42",
+          "--factor-gating",
+          "--alpha",
+          "0",
+          "--beta",
+          "0",
+          "--gamma",
+          "0"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 42,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/ablations/20260914T095503Z-33cae9a3/gated_prediction_only-seed42/tfa",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.0,
+          "beta": 0.0,
+          "gamma": 0.0,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    },
+    "ungated_seed101": {
+      "run": {
+        "status": "complete",
+        "model": "tfa",
+        "command": [
+          "./train_tfa.py",
+          "--config",
+          "./results/synthetic-fixture/config.json",
+          "--seed",
+          "101",
+          "--output-dir",
+          "./results/final-study/ablations/20260914T095503Z-33cae9a3",
+          "--run-name",
+          "ungated-seed101",
+          "--no-factor-gating"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 101,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/ablations/20260914T095503Z-33cae9a3/ungated-seed101/tfa",
+          "save_models": false,
+          "verbose": false,
+          "seed": 101,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": false,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    },
+    "gated_seed101": {
+      "run": {
+        "status": "complete",
+        "model": "tfa",
+        "command": [
+          "./train_tfa.py",
+          "--config",
+          "./results/synthetic-fixture/config.json",
+          "--seed",
+          "101",
+          "--output-dir",
+          "./results/final-study/ablations/20260914T095503Z-33cae9a3",
+          "--run-name",
+          "gated-seed101",
+          "--factor-gating"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 101,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/ablations/20260914T095503Z-33cae9a3/gated-seed101/tfa",
+          "save_models": false,
+          "verbose": false,
+          "seed": 101,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    },
+    "gated_prediction_only_seed101": {
+      "run": {
+        "status": "complete",
+        "model": "tfa",
+        "command": [
+          "./train_tfa.py",
+          "--config",
+          "./results/synthetic-fixture/config.json",
+          "--seed",
+          "101",
+          "--output-dir",
+          "./results/final-study/ablations/20260914T095503Z-33cae9a3",
+          "--run-name",
+          "gated_prediction_only-seed101",
+          "--factor-gating",
+          "--alpha",
+          "0",
+          "--beta",
+          "0",
+          "--gamma",
+          "0"
+        ],
+        "git_revision": "079e923c6a2165aee1dd7b50ad900720dfffbcc7",
+        "git_dirty": false,
+        "source_sha256": {
+          "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+          "src/cli.py": "309e8ece4c062061d11808ab904efe1362bf247bef2df5410a560766e5c06d65",
+          "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+          "src/data_loader.py": "04c9591bca4e6da100f62189103345bcf464838fde54392c72280a86823b5f2e",
+          "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+          "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+          "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+          "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+          "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+          "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+          "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+          "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+          "src/trainer.py": "a34c0a7d1eb2e9f3ec6ce01e337dcb6bdb7239231c2ebaca7a4140e25af145a0",
+          "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+          "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+          "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+          "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+        },
+        "python": "3.12.11",
+        "platform": "macOS-26.2-arm64-arm-64bit",
+        "packages": {
+          "numpy": "2.5.3",
+          "pandas": "3.0.5",
+          "scipy": "1.18.1",
+          "scikit-learn": "1.9.1",
+          "torch": "2.14.0"
+        },
+        "seed": 101,
+        "rolling_seed_rule": "base seed + zero-based attempted prediction index",
+        "data_sha256": {
+          "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+        },
+        "feature_names": [
+          "pca_0",
+          "pca_1",
+          "pca_2"
+        ],
+        "sequence_length": 3,
+        "dataset_statistics": {
+          "n_dates": 20,
+          "n_assets": 20,
+          "n_features": 3,
+          "date_range": "(Timestamp('2010-01-01 00:00:00'), Timestamp('2011-08-01 00:00:00'))",
+          "avg_assets_per_date": 20.0,
+          "feature_names": [
+            "pca_0",
+            "pca_1",
+            "pca_2"
+          ],
+          "return_stats": {
+            "mean": -0.0018152900325649922,
+            "std": 0.026763329654676878,
+            "min": -0.0577074807498826,
+            "max": 0.056252006444494,
+            "n_valid": 400,
+            "coverage_pct": 100.0
+          }
+        },
+        "planned_months": 6,
+        "successful_months": 6,
+        "last_model_date": "2011-08-01"
+      },
+      "effective_config": {
+        "data": {
+          "pca_path": "./results/synthetic-fixture/synthetic_panel.csv",
+          "returns_path": null,
+          "sequence_length": 3,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 8,
+          "val_window": 3,
+          "min_train_months": 8,
+          "output_dir": "./results/final-study/ablations/20260914T095503Z-33cae9a3/gated_prediction_only-seed101/tfa",
+          "save_models": false,
+          "verbose": false,
+          "seed": 101,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 32,
+          "dropout": 0.0,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 3,
+          "seq_len": 3,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.0,
+          "n_classes": 5,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "early_stopping_patience": 5,
+          "alpha": 0.0,
+          "beta": 0.0,
+          "gamma": 0.0,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 30,
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.0,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 32,
+          "epochs": 12,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "long_pct": 0.2,
+          "short_pct": 0.2,
+          "transaction_cost": 0.001,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      }
+    }
+  }
+}

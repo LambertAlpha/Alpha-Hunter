@@ -64,3 +64,20 @@ Files: meaningful regression tests, small synthetic-data/experiment helpers, `.g
 - [PyTorch saving/loading](https://docs.pytorch.org/tutorials/beginner/saving_loading_models.html): best-weight copies, model reconstruction and safe inference loading.
 - [Cvxportfolio turnover definition](https://www.cvxportfolio.com/en/1.2.0/constraints.html): half L1 trade weights excluding cash.
 - [Chronological validation](https://scikit-learn.org/stable/auto_examples/applications/plot_cyclical_feature_engineering.html): preserve temporal order and make split assumptions explicit.
+
+## Execution evidence
+
+Completed all six stages in source commit `079e923`. The final study ran against this
+clean committed source: five model runs plus nine predeclared TFA ablations, 84 rolling
+fits, 1,680 predictions, no skipped months. Published metrics were independently recomputed
+from the consolidated prediction CSV; source and evidence SHA-256 hashes were verified.
+
+Validation: 43 tests pass in the new locked macOS environment and Linux GitHub Actions;
+scoped Ruff and Pyright pass. End-to-end checks include all five models, repeat-seed exact
+predictions, inference checkpoint roundtrip, config precedence, sparse-period handling,
+nonzero failure exits, plotting, and independently loading/visualizing a saved checkpoint.
+
+The gate does not show a three-seed average IC improvement on this fixture (ungated .8579,
+gated .8562). Report all seeds and variants in `docs/engineering-study-2026-09-14.md`.
+Original-market-data revalidation remains a data dependency; no financial improvement claim
+is made. Archived 2025 reports are preserved with their audit notices.
