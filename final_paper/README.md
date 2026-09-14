@@ -31,3 +31,18 @@ summaries are not interchangeable. The audit records these distinctions.
 
 The original PDF and LaTeX are preserved. This README supersedes the previous promotional
 summary without silently rewriting the historical report.
+
+## Directory contents
+
+This directory contains the manuscript and its required figure:
+
+| File | Purpose |
+| --- | --- |
+| [paper.pdf](paper.pdf) | Original 2025 course report. |
+| [paper.tex](paper.tex) | LaTeX source for that report. |
+| [figures/risk_return_tradeoff.png](figures/risk_return_tradeoff.png) | Figure referenced by the LaTeX source; historical, unvalidated performance values. |
+
+The presentation, course requirements, historical plotting scripts and unused charts are
+in the [2025 coursework archive](../archive/coursework-2025/README.md). The manuscript,
+PDF and referenced figure retain their original contents. Current experimental evidence
+is presented separately in the [2026 engineering study](../docs/engineering-study-2026-09-14.md).

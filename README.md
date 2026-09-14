@@ -6,7 +6,7 @@ An academic team project at The Chinese University of Hong Kong, Shenzhen (2025)
 by **Boyi Lin, Linyi Qian, and Tingyu Yan**. We explored whether auxiliary objectives
 could improve a Transformer-based predictor's representations and empirical stability.
 
-[Research report and archive notes](final_paper/README_paper.md) ·
+[Research report and archive notes](final_paper/README.md) ·
 [Reproduction guide](docs/reproducibility.md) ·
 [Evaluation audit](docs/evaluation-audit.md) ·
 [2026 engineering study](docs/engineering-study-2026-09-14.md)
