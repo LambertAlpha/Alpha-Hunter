@@ -8,7 +8,8 @@ could improve a Transformer-based predictor's representations and empirical stab
 
 [Research report and archive notes](final_paper/README_paper.md) ·
 [Reproduction guide](docs/reproducibility.md) ·
-[Evaluation audit](docs/evaluation-audit.md)
+[Evaluation audit](docs/evaluation-audit.md) ·
+[2026 engineering study](docs/engineering-study-2026-09-14.md)
 
 ## Research question
 
@@ -20,8 +21,8 @@ and studied the effect of auxiliary loss weights.
 ## Method
 
 The pipeline consumes sequences of precomputed PCA features. A Transformer encoder feeds
-latent-factor and prediction heads; a decoder reconstructs the input. TFA predicts return
-quantile classes, while the baseline models use cross-sectional rank targets.
+latent-factor and prediction heads; a decoder reconstructs the input. TFA predicts quantile
+classes of rank targets, while the baseline models use cross-sectional rank targets.
 
 The training objective combines four terms:
 
@@ -32,8 +33,11 @@ The training objective combines four terms:
 Reconstruction encourages information preservation, smoothness penalizes changes in an
 auxiliary factor-weight head, and the correlation penalty encourages decorrelated latent
 factors. These are design motivations, not guarantees of economic interpretability or
-statistical independence. The current factor-weight head does not directly gate the
-prediction path; see the [implementation audit](docs/evaluation-audit.md).
+statistical independence. A residual feature gate now connects factor weights to the
+prediction and reconstruction paths; uniform weights recover the ungated representation.
+The ungated option remains available for ablations. The decoder also receives full encoder
+memory, so this is not a strict latent bottleneck or a replication of a conditional
+asset-pricing autoencoder. See the [implementation audit](docs/evaluation-audit.md).
 
 | Component | Implementation |
 | --- | --- |
@@ -60,7 +64,10 @@ not improve predictive metrics.
 **Evaluation status, September 2026:** a reproducibility audit identified rank targets being
 exported as economic returns, overlapping training/validation dates, and incorrect sequence
 axis ordering in the published pipeline. The current code corrects these issues and includes
-regression tests. **The historical Sharpe, drawdown, and “66% lower drawdown” claims are not
+regression tests. A second pass corrects portfolio accounting, model checkpointing,
+rolling error handling and configuration propagation, and tests gated/ungated TFA on a
+controlled synthetic panel. These engineering checks are separate from market evidence.
+**The historical Sharpe, drawdown, and “66% lower drawdown” claims are not
 validated performance results.** Corrected full-data experiments have not been run, and some
 historical comparisons also use different evaluation horizons. Details and evidence are in
 [the audit](docs/evaluation-audit.md).
@@ -78,11 +85,11 @@ corrected data/evaluation plumbing, and regression coverage.
 Use Python 3.12 and [uv](https://docs.astral.sh/uv/):
 
 ```bash
-uv venv --python 3.12
-uv pip install -r requirements.txt
-uv run --no-project python -m unittest discover -s tests -v
-uv run --no-project python train.py --help
-uv run --no-project python train_tfa.py --help
+uv sync --locked
+uv run python -m unittest discover -s tests -v
+uv run python -m scripts.generate_fixture
+uv run python train.py --model all --config results/synthetic-fixture/config.json
+uv run python train_tfa.py --help
 ```
 
 The tests use generated data and require no market-data credentials. Original feature and

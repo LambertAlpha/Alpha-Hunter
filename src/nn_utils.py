@@ -4,11 +4,12 @@ Shared neural network utilities for all models.
 Contains common components used across different model architectures.
 """
 
+import logging
+from typing import Optional
+
 import numpy as np
 import torch
 import torch.nn as nn
-from typing import Optional, Dict, Any
-import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,8 +30,9 @@ class PositionalEncoding(nn.Module):
 
         pe = torch.zeros(max_len, d_model)
         pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term[:d_model // 2])
 
+        self.pe: torch.Tensor
         self.register_buffer('pe', pe)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -65,8 +67,8 @@ class BaseNeuralPredictor:
         self.epochs = epochs
         self.early_stopping_patience = early_stopping_patience
 
-        self.model = None  # To be set by subclass
-        self.optimizer = None
+        self.model: Optional[nn.Module] = None  # To be set by subclass
+        self.optimizer: Optional[torch.optim.Optimizer] = None
         self.training_history = []
         self.best_model_state = None
 
@@ -81,6 +83,7 @@ class BaseNeuralPredictor:
 
         Returns average training loss.
         """
+        assert self.model is not None and self.optimizer is not None, 'Subclass must configure model/optimizer'
         self.model.train()
         indices = np.random.permutation(len(X_train))
         epoch_loss = 0.0
@@ -116,6 +119,7 @@ class BaseNeuralPredictor:
 
         Returns validation loss.
         """
+        assert self.model is not None
         self.model.eval()
         with torch.no_grad():
             val_loss = self._compute_batch_loss(X_val, y_val)
@@ -136,6 +140,7 @@ class BaseNeuralPredictor:
             patience_counter: Updated patience counter
             should_stop: Whether to stop training
         """
+        assert self.model is not None
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             patience_counter = 0
@@ -149,7 +154,7 @@ class BaseNeuralPredictor:
         should_stop = patience_counter >= self.early_stopping_patience
 
         if should_stop and verbose:
-            logger.info(f"Early stopping triggered")
+            logger.info("Early stopping triggered")
 
         return best_val_loss, patience_counter, should_stop
 
@@ -164,6 +169,7 @@ class BaseNeuralPredictor:
         """
         Standard training loop with validation and early stopping.
         """
+        assert self.model is not None
         best_val_loss = float('inf')
         patience_counter = 0
 
@@ -195,7 +201,6 @@ class BaseNeuralPredictor:
             )
 
             if should_stop:
-                self.model.load_state_dict(self.best_model_state)
                 break
 
         # Load best model if early stopping didn't trigger

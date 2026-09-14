@@ -8,14 +8,15 @@ Provides functions to:
 4. Generate trading signals from attention patterns
 """
 
+import logging
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import torch
-import matplotlib.pyplot as plt
 import seaborn as sns
-from typing import Dict, List, Tuple, Optional
-from pathlib import Path
-import logging
+import torch
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ class TFAAnalyzer:
             device: Device for computation
         """
         self.model = model
-        self.device = device
+        self.device = getattr(model, 'device', device)
         
         # Extract the underlying TFA model if wrapped
         if hasattr(model, 'model'):
@@ -62,7 +63,9 @@ class TFAAnalyzer:
         Returns:
             DataFrame with columns: [date, asset, month_offset, factor, weight]
         """
-        X_tensor = torch.FloatTensor(X).to(self.device)
+        # Wrapped predictors accept raw PCA; bare networks require already-scaled input.
+        scaled = self.model.transform_inputs(X) if hasattr(self.model, 'transform_inputs') else X
+        X_tensor = torch.as_tensor(scaled, dtype=torch.float32, device=self.device)
         
         with torch.no_grad():
             weights = self.tfa_model.get_factor_weights(X_tensor)
@@ -88,7 +91,7 @@ class TFAAnalyzer:
     def plot_average_attention_pattern(
         self,
         weights_df: pd.DataFrame,
-        save_path: Optional[str] = None,
+        save_path: Optional[str | Path] = None,
         figsize: Tuple[int, int] = (14, 8)
     ):
         """
@@ -100,7 +103,7 @@ class TFAAnalyzer:
             figsize: Figure size
         """
         # Aggregate weights
-        avg_weights = weights_df.groupby(['month_offset', 'factor'])['weight'].mean().unstack()
+        avg_weights = weights_df.pivot_table(index='month_offset', columns='factor', values='weight', aggfunc='mean')
         
         fig, axes = plt.subplots(1, 2, figsize=figsize)
         
@@ -108,10 +111,10 @@ class TFAAnalyzer:
         sns.heatmap(
             avg_weights.T,
             cmap='YlOrRd',
-            cbar_kws={'label': 'Attention Weight'},
+            cbar_kws={'label': 'Gate Weight'},
             ax=axes[0],
             vmin=0,
-            vmax=avg_weights.values.max()
+            vmax=avg_weights.to_numpy().max()
         )
         axes[0].set_title('Average Factor Weights Across Time', fontsize=14, fontweight='bold')
         axes[0].set_xlabel('Months Ago')
@@ -122,7 +125,7 @@ class TFAAnalyzer:
             axes[1].plot(avg_weights.index, avg_weights[factor], 
                         label=factor, linewidth=2, alpha=0.7)
         
-        axes[1].set_title('Temporal Attention Decay', fontsize=14, fontweight='bold')
+        axes[1].set_title('Feature Gate Weights Over Input History', fontsize=14, fontweight='bold')
         axes[1].set_xlabel('Months Ago')
         axes[1].set_ylabel('Average Weight')
         axes[1].legend(bbox_to_anchor=(1.05, 1), loc='upper left')
@@ -134,13 +137,13 @@ class TFAAnalyzer:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
             logger.info(f"Saved attention pattern to {save_path}")
         
-        plt.show()
+        plt.close()
     
     def analyze_regime_patterns(
         self,
         weights_df: pd.DataFrame,
         market_states: pd.Series,
-        save_path: Optional[str] = None
+        save_path: Optional[str | Path] = None
     ):
         """
         Analyze attention patterns in different market regimes.
@@ -167,7 +170,7 @@ class TFAAnalyzer:
         
         for i, regime in enumerate(regimes):
             regime_data = weights_with_regime[weights_with_regime['regime'] == regime]
-            avg_weights = regime_data.groupby(['month_offset', 'factor'])['weight'].mean().unstack()
+            avg_weights = pd.DataFrame(regime_data).pivot_table(index='month_offset', columns='factor', values='weight', aggfunc='mean')
             
             sns.heatmap(
                 avg_weights.T,
@@ -186,13 +189,13 @@ class TFAAnalyzer:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
             logger.info(f"Saved regime analysis to {save_path}")
         
-        plt.show()
+        plt.close()
     
     def plot_factor_importance_evolution(
         self,
         weights_df: pd.DataFrame,
         window: int = 12,
-        save_path: Optional[str] = None
+        save_path: Optional[str | Path] = None
     ):
         """
         Plot how factor importance evolves over calendar time.
@@ -214,7 +217,7 @@ class TFAAnalyzer:
         ).sort_index()
         
         # Smooth with rolling window
-        importance_smooth = importance_ts.rolling(window=window, min_periods=1).mean()
+        importance_smooth = pd.DataFrame(importance_ts.rolling(window=window, min_periods=1).mean())
         
         # Plot
         fig, ax = plt.subplots(figsize=(14, 6))
@@ -236,7 +239,7 @@ class TFAAnalyzer:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
             logger.info(f"Saved factor evolution to {save_path}")
         
-        plt.show()
+        plt.close()
     
     def identify_attention_signals(
         self,
@@ -244,7 +247,7 @@ class TFAAnalyzer:
         threshold: float = 0.5
     ) -> pd.DataFrame:
         """
-        Identify trading signals from attention patterns.
+        Describe weight concentration; these are not validated trading signals.
         
         Args:
             weights_df: DataFrame from extract_factor_weights
@@ -257,26 +260,25 @@ class TFAAnalyzer:
         recent = weights_df[weights_df['month_offset'].isin([-1, -2, -3])]
         
         # Aggregate by sample and factor
-        factor_attention = recent.groupby(['sample_idx', 'factor'])['weight'].sum()
-        factor_attention = factor_attention.reset_index()
+        factor_attention = pd.DataFrame(recent.groupby(['sample_idx', 'factor'], as_index=False).agg(weight=('weight', 'sum')))
         
         # Identify high-attention factors
         signals = []
         for idx in factor_attention['sample_idx'].unique():
-            sample_weights = factor_attention[factor_attention['sample_idx'] == idx]
+            sample_weights = pd.DataFrame(factor_attention[factor_attention['sample_idx'] == idx])
             total_weight = sample_weights['weight'].sum()
             
             # Concentration in top factors
             top3_weight = sample_weights.nlargest(3, 'weight')['weight'].sum()
             concentration = top3_weight / total_weight if total_weight > 0 else 0
             
-            # Momentum signal: high weight on recent months
-            momentum_signal = 1 if concentration > threshold else 0
+            # A diagnostic threshold, not evidence of economic momentum.
+            high_concentration = concentration > threshold
             
             signals.append({
                 'sample_idx': idx,
                 'concentration': concentration,
-                'momentum_signal': momentum_signal,
+                'high_concentration': high_concentration,
                 'top_factor': sample_weights.nlargest(1, 'weight')['factor'].iloc[0]
             })
         
@@ -300,7 +302,9 @@ class TFAAnalyzer:
             DataFrame with latent factors
             Dict with correlation analysis
         """
-        X_tensor = torch.FloatTensor(X).to(self.device)
+        # Wrapped predictors accept raw PCA; bare networks require already-scaled input.
+        scaled = self.model.transform_inputs(X) if hasattr(self.model, 'transform_inputs') else X
+        X_tensor = torch.as_tensor(scaled, dtype=torch.float32, device=self.device)
         
         with torch.no_grad():
             latent = self.tfa_model.get_latent_factors(X_tensor)
@@ -338,7 +342,7 @@ class TFAAnalyzer:
         self,
         latent_df: pd.DataFrame,
         correlations: Dict,
-        save_path: Optional[str] = None
+        save_path: Optional[str | Path] = None
     ):
         """Plot latent factor analysis."""
         fig, axes = plt.subplots(2, 2, figsize=(14, 10))
@@ -355,7 +359,7 @@ class TFAAnalyzer:
         
         # 2. Correlation matrix of latent factors
         latent_cols = [col for col in latent_df.columns if col.startswith('Latent')]
-        corr_matrix = latent_df[latent_cols].corr()
+        corr_matrix = pd.DataFrame(latent_df[latent_cols]).corr()
         
         sns.heatmap(
             corr_matrix,
@@ -396,7 +400,7 @@ class TFAAnalyzer:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
             logger.info(f"Saved latent factor analysis to {save_path}")
         
-        plt.show()
+        plt.close()
     
     def generate_report(
         self,
@@ -452,9 +456,9 @@ class TFAAnalyzer:
         )
         
         # 5. Trading signals
-        logger.info("5. Generating trading signals...")
+        logger.info("5. Computing weight-concentration diagnostics...")
         signals = self.identify_attention_signals(weights_df)
-        signals.to_csv(output_path / 'attention_signals.csv', index=False)
+        signals.to_csv(output_path / 'weight_concentration.csv', index=False)
         
         logger.info(f"✅ Report saved to {output_path}")
         

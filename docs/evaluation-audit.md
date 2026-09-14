@@ -45,7 +45,7 @@ replacement headline metric.
 - In `TemporalFactorAutoencoder.forward`, `weighted_pca` is computed but not consumed by
   the latent/prediction path. The auxiliary factor-weight head is regularized for
   smoothness; it should not be presented as a demonstrated causal feature attribution or
-  as weights that directly determine predictions. No architecture change was made here.
+  as weights that directly determine predictions. The first maintenance pass did not change that architecture.
 - A latent correlation penalty encourages decorrelation, not statistical independence.
 - Upstream PCA timing and historical universe construction remain to be independently
   verified with the original data.
@@ -59,3 +59,41 @@ evaluation dates and capital/cost conventions, and multiple seeds. Preserve pred
 configurations, source versions, and a machine-readable table for every compared run.
 Report negative results and feature-dimension sensitivity alongside the selected model.
 See [reproducibility.md](reproducibility.md) for the current executable entry points.
+
+## Second maintenance pass: model and experiment integrity
+
+The subsequent autonomous review starts from `6a4e073`. New regression cases first
+reproduced failures in portfolio accounting, monthly validation, model training and rolling
+error handling. Current code additionally fixes the following:
+
+| Finding | Correction and validation |
+| --- | --- |
+| Transaction costs depended on new names and doubled initial entry | Signed target weights, return drift, L1 traded notional and separate cost columns; hand-calculated tests. |
+| First-month loss was omitted from drawdown; severe losses were floored | Initial NAV participates in running maximum; portfolio insolvency fails visibly. |
+| Long/short baskets could overlap; “value” silently meant equal weighting | Require disjoint enabled legs and reject unsupported weighting. |
+| Duplicates, calendar gaps, infinite inputs and zero fill limit were mishandled | Explicit monthly data contract, numeric checks, identifier preservation and tests. |
+| Factor weights were disconnected from predictions | Residual feature gating now affects latent prediction and decoder memory; uniform weights recover the ungated graph; prediction-gradient/intervention tests. |
+| A singleton batch caused covariance NaNs | Skip the correlation penalty when fewer than two samples are present; clamp variance and penalize off-diagonal correlations. |
+| TFA and Transformer sometimes retained final rather than best validation weights | Restore best weights after normal completion and early stopping; reset fit-dependent state. |
+| TFA checkpoints omitted preprocessing/architecture | Safe inference payload includes scaler, bins, dimensions and feature names; exact prediction roundtrip tested. |
+| Analysis passed unscaled inputs to a trained network | Wrapped analysis uses the fitted predictor normalization. |
+| Bad rolling months silently disappeared; caches grew with whole windows | Fail by default, record all planned dates/statuses, and bound caching by monthly slices. |
+| CLI overwrote config-file values; sweeps dropped flags and mixed old outputs | Shared CLI, strict keys, effective settings and provenance, isolated runs, current-run-only comparisons. |
+
+The older architecture-boundary bullet above describes `017882b`/the first maintenance
+pass. It is superseded for current gated models. `factor_gating=False` remains available
+for a controlled comparison of the ungated computation graph; it does not undo data,
+accounting or training fixes.
+
+The residual gate adds `W((F * weights - 1) * standardized_input)` to each encoded state,
+where F is the number of features and W is the input projection without bias. Uniform
+weights add zero. This is a testable design modification, **not an established improvement
+on financial data**. The decoder still sees full sequence memory: the architecture is
+not a strict latent bottleneck autoencoder, and its latent factors are not identified
+asset-pricing factors. It is not a replication of
+[Gu, Kelly and Xiu's conditional asset-pricing model](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3335536).
+
+Turnover follows the [half-L1 risky-trade convention](https://www.cvxportfolio.com/en/1.2.0/constraints.html).
+Inference artifacts follow the [PyTorch model saving/loading guidance](https://docs.pytorch.org/tutorials/beginner/saving_loading_models.html).
+The new [engineering experiment report](engineering-study-2026-09-14.md) contains the
+controlled checks and negative findings. Original-data research results remain unverified.

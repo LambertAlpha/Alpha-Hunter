@@ -1,68 +1,60 @@
-"""
-Quick script to visualize TFA attention/latent factors for a few dates.
+"""Visualize a saved TFA checkpoint with its fitted preprocessing.
 
-Usage:
-    python -m src.plot_tfa_attention --pca_path data/pca/old/pca_feature_store.csv --model_path results/tfa_oldpca
-Outputs:
-    Saves heatmaps under <model_path>/analysis/*.png
+This is post-hoc model inspection, not an out-of-sample performance estimate.
+Example:
+  uv run python -m src.plot_tfa_attention --pca_path /path/to/panel.csv \
+      --model_path results/demo/run/tfa --sample_dates 1
 """
-
 import argparse
 from pathlib import Path
+
 import pandas as pd
-import torch
-import matplotlib.pyplot as plt
-import seaborn as sns
 
-from src.data_loader import SequenceDataLoader
-from src.models_tfa import TFAPredictor
+from .data_loader import SequenceDataLoader
+from .models_tfa import TFAPredictor
+from .tfa_analysis import TFAAnalyzer
 
 
-def load_model(model_dir: Path):
-    # Dummy loader: in current pipeline we don't save state_dict; placeholder for future extension.
-    # Here we just return a fresh model with matching shapes to extract weights on a batch.
-    raise NotImplementedError("Model weights are not persisted in current pipeline.")
+def load_model(model_path: Path) -> TFAPredictor:
+    checkpoint = model_path / 'last_model.pt' if model_path.is_dir() else model_path
+    return TFAPredictor.load(checkpoint)
 
 
-def visualize_weights(weights: torch.Tensor, dates, save_path: Path, title: str):
-    """
-    weights: (batch, seq_len, n_factors)
-    We'll aggregate over batch (mean) to get seq_len x n_factors heatmap.
-    """
-    w = weights.mean(dim=0).cpu().numpy()  # seq_len x n_factors
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(w.T, cmap="viridis", cbar_kws={"label": "Attention weight"})
-    plt.xlabel("Time (lag index)")
-    plt.ylabel("PCA factor")
-    plt.title(title)
-    save_path.parent.mkdir(parents=True, exist_ok=True)
-    plt.tight_layout()
-    plt.savefig(save_path)
-    plt.close()
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--pca_path', '--pca-path', required=True)
+    parser.add_argument('--model_path', '--model-path', type=Path, required=True)
+    parser.add_argument('--sample_dates', '--sample-dates', type=int, default=1)
+    parser.add_argument('--forward-fill-limit', type=int, default=None,
+                        help='Defaults to the neighboring saved config; otherwise specify explicitly')
+    parser.add_argument('--output-dir', type=Path)
+    args = parser.parse_args(argv)
+    if args.sample_dates < 1:
+        parser.error('sample_dates must be positive')
+    model = load_model(args.model_path)
+    model_dir = args.model_path if args.model_path.is_dir() else args.model_path.parent
+    fill = args.forward_fill_limit
+    if fill is None:
+        from .config import Config
+        config_path = model_dir / 'config.json'
+        if not config_path.exists():
+            parser.error('Supply --forward-fill-limit when the saved config is unavailable')
+        fill = Config.load(config_path).data.forward_fill_limit
+    loader = SequenceDataLoader(args.pca_path, sequence_length=model.seq_len, forward_fill_limit=fill)
+    if model.feature_names is not None and loader.feature_columns != model.feature_names:
+        raise ValueError('Feature names/order differ from the checkpoint')
+    output = args.output_dir or model_dir / 'checkpoint-inspection'
+    output.mkdir(parents=True, exist_ok=True)
+    analyzer = TFAAnalyzer(model)
+    for date in loader.dates[-args.sample_dates:]:
+        batch = loader.build_sequences(date, include_target=False, return_dict=True)
+        weights = analyzer.extract_factor_weights(batch['X'], pd.DatetimeIndex([date] * len(batch['X'])),
+                                                  batch['assets'].tolist())
+        tag = date.strftime('%Y-%m')
+        weights.to_csv(output / f'{tag}-weights.csv', index=False)
+        analyzer.plot_average_attention_pattern(weights, save_path=output / f'{tag}-weights.png')
+    print(f'Checkpoint inspection saved to {output.resolve()}')
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--pca_path", type=str, required=True)
-    parser.add_argument("--returns_path", type=str, default=None)
-    parser.add_argument("--model_path", type=str, required=True, help="Directory containing config/stats; placeholder for weights")
-    parser.add_argument("--sample_dates", type=int, default=3, help="Number of tail dates to visualize")
-    args = parser.parse_args()
-
-    # Load data
-    loader = SequenceDataLoader(
-        pca_path=args.pca_path,
-        returns_path=args.returns_path,
-        sequence_length=36,
-        forward_fill_limit=3,
-    )
-    stats = loader.get_statistics()
-    dates = stats["date_range"]
-    tail_dates = loader.dates[-args.sample_dates:]
-
-    # Placeholder model (no weights saved): raise for now.
-    raise SystemExit("Attention visualization placeholder: current pipeline没有保存TFA权重，需先扩展保存/加载模型。")
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

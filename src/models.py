@@ -4,14 +4,15 @@ Model architectures for return prediction.
 Implements Transformer encoder and baseline models (Ridge, Random Forest, MLP).
 """
 
+import logging
+from typing import Any, Dict, Optional
+
 import numpy as np
 import torch
 import torch.nn as nn
-from sklearn.linear_model import Ridge
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import Ridge
 from sklearn.preprocessing import StandardScaler
-from typing import Optional, Dict, Any
-import logging
 
 from .nn_utils import PositionalEncoding
 
@@ -222,6 +223,8 @@ class TransformerPredictor(BasePredictor):
         self.scaler = StandardScaler()
         
         self.training_history = []
+        self._initial_state = {k: v.detach().cpu().clone() for k, v in self.model.state_dict().items()}
+        self.best_model_state = None
     
     def fit(
         self,
@@ -247,10 +250,18 @@ class TransformerPredictor(BasePredictor):
         verbose : bool, default=True
             Whether to print training progress
         """
+        if self.epochs < 1 or self.batch_size < 1 or len(X) == 0:
+            raise ValueError("Positive epochs/batch size and nonempty training data required")
+        if not np.isfinite(X).all() or not np.isfinite(y).all():
+            raise ValueError("Training data must be finite")
+        self.model.load_state_dict(self._initial_state)
+        self.training_history = []
+        self.best_model_state = None
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         # Normalize inputs
         n_samples, seq_len, n_features = X.shape
         X_flat = X.reshape(-1, n_features)
-        X_flat_scaled = self.scaler.fit_transform(X_flat)
+        X_flat_scaled = np.asarray(self.scaler.fit_transform(X_flat))
         X_scaled = X_flat_scaled.reshape(n_samples, seq_len, n_features)
         
         # Convert to tensors
@@ -259,7 +270,7 @@ class TransformerPredictor(BasePredictor):
         
         if X_val is not None and y_val is not None:
             X_val_flat = X_val.reshape(-1, n_features)
-            X_val_flat_scaled = self.scaler.transform(X_val_flat)
+            X_val_flat_scaled = np.asarray(self.scaler.transform(X_val_flat))
             X_val_scaled = X_val_flat_scaled.reshape(X_val.shape[0], seq_len, n_features)
             
             X_val_tensor = torch.FloatTensor(X_val_scaled).to(self.device)
@@ -288,12 +299,14 @@ class TransformerPredictor(BasePredictor):
                 loss = nn.MSELoss()(predictions, y_batch)
                 
                 # Backward pass
+                if not torch.isfinite(loss):
+                    raise ValueError("Nonfinite training loss")
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
                 self.optimizer.step()
                 
-                train_loss += loss.item()
-                n_batches += 1
+                train_loss += loss.item() * len(batch_idx)
+                n_batches += len(batch_idx)
             
             avg_train_loss = train_loss / n_batches
             
@@ -326,7 +339,6 @@ class TransformerPredictor(BasePredictor):
                     if verbose:
                         logger.info(f"Early stopping at epoch {epoch+1}")
                     # Restore best model
-                    self.model.load_state_dict(self.best_model_state)
                     break
             else:
                 self.training_history.append({
@@ -337,6 +349,10 @@ class TransformerPredictor(BasePredictor):
                 if verbose and (epoch + 1) % 5 == 0:
                     logger.info(f"Epoch {epoch+1}/{self.epochs} - Train Loss: {avg_train_loss:.6f}")
     
+        if self.best_model_state is not None:
+            self.model.load_state_dict(self.best_model_state)
+        self.model.eval()
+
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
         Generate predictions.
@@ -356,7 +372,7 @@ class TransformerPredictor(BasePredictor):
         # Normalize
         n_samples, seq_len, n_features = X.shape
         X_flat = X.reshape(-1, n_features)
-        X_flat_scaled = self.scaler.transform(X_flat)
+        X_flat_scaled = np.asarray(self.scaler.transform(X_flat))
         X_scaled = X_flat_scaled.reshape(n_samples, seq_len, n_features)
         
         X_tensor = torch.FloatTensor(X_scaled).to(self.device)
@@ -416,14 +432,14 @@ class RidgePredictor(BasePredictor):
         """
         # Flatten sequences
         X_flat = X.reshape(X.shape[0], -1)
-        X_scaled = self.scaler.fit_transform(X_flat)
+        X_scaled = np.asarray(self.scaler.fit_transform(X_flat))
         
         self.model.fit(X_scaled, y)
     
     def predict(self, X: np.ndarray) -> np.ndarray:
         """Generate predictions."""
         X_flat = X.reshape(X.shape[0], -1)
-        X_scaled = self.scaler.transform(X_flat)
+        X_scaled = np.asarray(self.scaler.transform(X_flat))
         return self.model.predict(X_scaled)
     
     def get_params(self) -> Dict[str, Any]:
@@ -474,13 +490,13 @@ class RandomForestPredictor(BasePredictor):
     def fit(self, X: np.ndarray, y: np.ndarray, **kwargs):
         """Fit Random Forest."""
         X_flat = X.reshape(X.shape[0], -1)
-        X_scaled = self.scaler.fit_transform(X_flat)
+        X_scaled = np.asarray(self.scaler.fit_transform(X_flat))
         self.model.fit(X_scaled, y)
     
     def predict(self, X: np.ndarray) -> np.ndarray:
         """Generate predictions."""
         X_flat = X.reshape(X.shape[0], -1)
-        X_scaled = self.scaler.transform(X_flat)
+        X_scaled = np.asarray(self.scaler.transform(X_flat))
         return self.model.predict(X_scaled)
     
     def get_params(self) -> Dict[str, Any]:
@@ -556,13 +572,22 @@ class MLPPredictor(BasePredictor):
         )
         self.scaler = StandardScaler()
         self.training_history = []
+        self._initial_state = {k: v.detach().cpu().clone() for k, v in self.model.state_dict().items()}
         self.best_model_state = None
 
     def fit(self, X: np.ndarray, y: np.ndarray, X_val=None, y_val=None, verbose: bool = False, **kwargs):
         """Fit MLP with optional validation for best model saving."""
+        if self.epochs < 1 or self.batch_size < 1 or len(X) == 0:
+            raise ValueError("Positive epochs/batch size and nonempty training data required")
+        if not np.isfinite(X).all() or not np.isfinite(y).all():
+            raise ValueError("Training data must be finite")
+        self.model.load_state_dict(self._initial_state)
+        self.training_history = []
+        self.best_model_state = None
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         # Flatten and normalize
         X_flat = X.reshape(X.shape[0], -1)
-        X_scaled = self.scaler.fit_transform(X_flat)
+        X_scaled = np.asarray(self.scaler.fit_transform(X_flat))
 
         X_train = torch.FloatTensor(X_scaled).to(self.device)
         y_train = torch.FloatTensor(y).to(self.device)
@@ -570,8 +595,9 @@ class MLPPredictor(BasePredictor):
         # Prepare validation data if provided
         has_val = X_val is not None and y_val is not None
         if has_val:
+            assert X_val is not None and y_val is not None
             X_val_flat = X_val.reshape(X_val.shape[0], -1)
-            X_val_scaled = self.scaler.transform(X_val_flat)
+            X_val_scaled = np.asarray(self.scaler.transform(X_val_flat))
             X_val_t = torch.FloatTensor(X_val_scaled).to(self.device)
             y_val_t = torch.FloatTensor(y_val).to(self.device)
             best_val_loss = float('inf')
@@ -590,11 +616,13 @@ class MLPPredictor(BasePredictor):
                 self.optimizer.zero_grad()
                 predictions = self.model(X_batch).squeeze(-1)
                 loss = nn.MSELoss()(predictions, y_batch)
+                if not torch.isfinite(loss):
+                    raise ValueError("Nonfinite training loss")
                 loss.backward()
                 self.optimizer.step()
 
-                train_loss += loss.item()
-                n_batches += 1
+                train_loss += loss.item() * len(batch_idx)
+                n_batches += len(batch_idx)
 
             avg_loss = train_loss / n_batches
 
@@ -633,7 +661,7 @@ class MLPPredictor(BasePredictor):
         """Generate predictions."""
         self.model.eval()
         X_flat = X.reshape(X.shape[0], -1)
-        X_scaled = self.scaler.transform(X_flat)
+        X_scaled = np.asarray(self.scaler.transform(X_flat))
         X_tensor = torch.FloatTensor(X_scaled).to(self.device)
         
         with torch.no_grad():

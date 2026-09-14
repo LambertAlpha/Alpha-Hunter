@@ -1,5 +1,5 @@
 """
-Temporal Factor Autoencoder (TFA) - Core Innovation
+Temporal Factor Autoencoder (TFA) - experimental sequence rank model
 
 Learns time-varying factor importance through attention-based reconstruction.
 
@@ -10,15 +10,18 @@ Key Features:
 4. Multi-task Learning: Joint optimization of prediction and reconstruction
 
 Reference: 
-    Inspired by Gu, Kelly, Xiu (2020) but extended with temporal dynamics
+    Conceptually related to representation learning; not a replication of Gu/Kelly/Xiu.
 """
+
+import logging
+from copy import deepcopy
+from pathlib import Path
+from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Optional, Dict, Tuple
-import logging
 from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
@@ -72,9 +75,15 @@ class TemporalFactorAutoencoder(nn.Module):
         n_latent_factors: int = 5,
         dropout: float = 0.1,
         n_classes: int = 5,
+        factor_gating: bool = True,
     ):
         super().__init__()
         
+        if min(n_pca_factors, seq_len, n_heads, n_encoder_layers, n_decoder_layers, n_latent_factors) < 1:
+            raise ValueError("Architecture dimensions must be positive")
+        if d_model < 2 or d_model % n_heads or n_classes < 2:
+            raise ValueError("d_model must be divisible by n_heads; n_classes >= 2")
+        self.factor_gating = factor_gating
         self.n_pca_factors = n_pca_factors
         self.seq_len = seq_len
         self.d_model = d_model
@@ -103,7 +112,7 @@ class TemporalFactorAutoencoder(nn.Module):
             enable_nested_tensor=False,  # Disable nested tensor when norm_first=True
         )
         
-        # ===== Dynamic Factor Weight Generator (KEY INNOVATION!) =====
+        # ===== Dynamic Factor Weight Generator =====
         self.factor_weight_generator = nn.Sequential(
             nn.Linear(d_model, d_model // 2),
             nn.GELU(),
@@ -187,7 +196,8 @@ class TemporalFactorAutoencoder(nn.Module):
             factor_weights: (batch, seq_len, n_pca_factors) - Dynamic weights (if return_all)
             latent_factors: (batch, n_latent_factors) - Learned factors (if return_all)
         """
-        batch_size, seq_len, n_features = pca_seq.shape
+        if pca_seq.ndim != 3 or pca_seq.shape[1:] != (self.seq_len, self.n_pca_factors):
+            raise ValueError("Expected (batch, configured sequence length, PCA features)")
         
         # 1. Project input to d_model
         x = self.input_projection(pca_seq)  # (batch, seq_len, d_model)
@@ -198,24 +208,25 @@ class TemporalFactorAutoencoder(nn.Module):
         # 3. Encode: Learn temporal patterns
         encoded = self.encoder(x)  # (batch, seq_len, d_model)
         
-        # 4. Generate dynamic factor weights (KEY INNOVATION!)
+        # 4. Generate dynamic factor weights
         factor_weights = self.factor_weight_generator(encoded)
         # (batch, seq_len, n_pca_factors)
         # Each timestep has a distribution over PCA factors
         
-        # 5. Apply dynamic weighting to original PCA factors
-        weighted_pca = pca_seq * factor_weights
-        # (batch, seq_len, n_pca_factors)
-        
-        # 6. Extract latent factors from last timestep
-        last_encoded = encoded[:, -1, :]  # (batch, d_model)
+        # Residual feature gate. Uniform weights recover the ungated graph exactly.
+        # This gives the weight head a path to prediction and reconstruction losses.
+        context = encoded
+        if self.factor_gating:
+            deviation = (self.n_pca_factors * factor_weights - 1) * pca_seq
+            context = encoded + F.linear(deviation, self.input_projection.weight)
+        last_encoded = context[:, -1, :]
         latent_factors = self.latent_projector(last_encoded)
         # (batch, n_latent_factors)
         
         # 7. Decode: Reconstruct original PCA factors
         decoded = self.decoder(
             tgt=x,           # Target sequence
-            memory=encoded   # Encoder output (memory)
+            memory=context   # Gated encoder memory
         )  # (batch, seq_len, d_model)
         
         reconstructed = self.recon_head(decoded)
@@ -268,7 +279,7 @@ class TemporalFactorAutoencoder(nn.Module):
         
         # Loss 3: Temporal smoothness loss (REGULARIZATION)
         # Prevents erratic weight changes, enhances interpretability
-        if self.seq_len > 1:
+        if pca_seq.size(1) > 1:
             weight_diff = weights[:, 1:, :] - weights[:, :-1, :]
             smooth_loss = (weight_diff ** 2).mean()
         else:
@@ -276,7 +287,7 @@ class TemporalFactorAutoencoder(nn.Module):
         
         # Loss 4: Orthogonality loss (OPTIONAL)
         # Encourages learned latent factors to be independent
-        if self.n_latent_factors > 1:
+        if self.n_latent_factors > 1 and latent.size(0) > 1:
             # Compute covariance matrix
             latent_centered = latent - latent.mean(dim=0, keepdim=True)
             latent_cov = torch.matmul(latent_centered.T, latent_centered)
@@ -288,10 +299,11 @@ class TemporalFactorAutoencoder(nn.Module):
                 device=latent.device
             )
             # Normalize by variance to make diagonal elements ~1
-            latent_std = torch.sqrt(torch.diag(latent_cov))
+            latent_std = torch.sqrt(torch.diag(latent_cov).clamp_min(1e-8))
             latent_corr = latent_cov / (latent_std.unsqueeze(1) * latent_std.unsqueeze(0) + 1e-8)
             
-            ortho_loss = ((latent_corr - eye) ** 2).mean()
+            off_diagonal = latent_corr * (1 - eye)
+            ortho_loss = off_diagonal.square().sum() / (self.n_latent_factors * (self.n_latent_factors - 1))
         else:
             ortho_loss = torch.tensor(0.0, device=pca_seq.device)
         
@@ -362,361 +374,172 @@ class TemporalFactorAutoencoder(nn.Module):
 
 
 class TFAPredictor:
+    """Fit a sequence classifier and return scores in training-label units.
+
+    In this project labels are cross-sectional percentile ranks, so predictions
+    are ranking scores, not calibrated economic returns. Each fit starts from
+    this instance's initial weights and resets the optimizer/scaler/history.
     """
-    Wrapper class for TFA that handles training and prediction.
-    Compatible with the existing training framework.
-    """
-    
-    def __init__(
-        self,
-        n_pca_factors: int = 11,
-        seq_len: int = 36,
-        d_model: int = 128,
-        n_heads: int = 8,
-        n_encoder_layers: int = 4,
-        n_decoder_layers: int = 2,
-        n_latent_factors: int = 5,
-        dropout: float = 0.1,
-        n_classes: int = 5,
-        lr: float = 1e-3,
-        weight_decay: float = 1e-4,
-        batch_size: int = 128,
-        epochs: int = 50,
-        early_stopping_patience: int = 5,
-        alpha: float = 0.1,  # Reconstruction weight
-        beta: float = 0.05,  # Smoothness weight
-        gamma: float = 0.01,  # Orthogonality weight
-        device: str = 'cpu',
-    ):
-        self.device = torch.device(device)
-        
-        # Model hyperparameters
-        self.n_pca_factors = n_pca_factors
-        self.seq_len = seq_len
-        self.n_classes = n_classes
-        self.lr = lr
-        self.weight_decay = weight_decay
-        self.batch_size = batch_size
-        self.epochs = epochs
+    def __init__(self, n_pca_factors: int = 11, seq_len: int = 36,
+                 d_model: int = 128, n_heads: int = 8, n_encoder_layers: int = 4,
+                 n_decoder_layers: int = 2, n_latent_factors: int = 5,
+                 dropout: float = .1, n_classes: int = 5, lr: float = 1e-3,
+                 weight_decay: float = 1e-4, batch_size: int = 128, epochs: int = 50,
+                 early_stopping_patience: int = 5, alpha: float = .1,
+                 beta: float = .05, gamma: float = .01, device: str = 'cpu',
+                 factor_gating: bool = True):
+        if min(batch_size, epochs, early_stopping_patience) < 1:
+            raise ValueError("Batch size, epochs and patience must be positive")
+        if not np.isfinite([lr, weight_decay, alpha, beta, gamma]).all() or lr <= 0 or min(weight_decay, alpha, beta, gamma) < 0:
+            raise ValueError("Invalid learning rate or loss/decay weights")
+        self.config: dict[str, Any] = dict(n_pca_factors=n_pca_factors, seq_len=seq_len, d_model=d_model,
+                           n_heads=n_heads, n_encoder_layers=n_encoder_layers,
+                           n_decoder_layers=n_decoder_layers, n_latent_factors=n_latent_factors,
+                           dropout=dropout, n_classes=n_classes, lr=lr, weight_decay=weight_decay,
+                           batch_size=batch_size, epochs=epochs, early_stopping_patience=early_stopping_patience,
+                           alpha=alpha, beta=beta, gamma=gamma, device=device, factor_gating=factor_gating)
+        self.n_pca_factors, self.seq_len, self.n_classes = n_pca_factors, seq_len, n_classes
+        self.lr, self.weight_decay = lr, weight_decay
+        self.batch_size, self.epochs = batch_size, epochs
         self.early_stopping_patience = early_stopping_patience
-        self.alpha = alpha
-        self.beta = beta
-        self.gamma = gamma
-        
-        # Initialize model
-        self.model = TemporalFactorAutoencoder(
-            n_pca_factors=n_pca_factors,
-            seq_len=seq_len,
-            d_model=d_model,
-            n_heads=n_heads,
-            n_encoder_layers=n_encoder_layers,
-            n_decoder_layers=n_decoder_layers,
-            n_latent_factors=n_latent_factors,
-            dropout=dropout,
-            n_classes=n_classes,
-        ).to(self.device)
-        
-        # Optimizer
-        self.optimizer = torch.optim.AdamW(
-            self.model.parameters(),
-            lr=lr,
-            weight_decay=weight_decay,
-        )
-        
-        # Learning rate scheduler
-        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            self.optimizer,
-            mode='min',
-            factor=0.5,
-            patience=3
-        )
-        
+        self.alpha, self.beta, self.gamma = alpha, beta, gamma
+        self.device = torch.device(device)
+        architecture = {key: self.config[key] for key in (
+            'n_pca_factors', 'seq_len', 'd_model', 'n_heads', 'n_encoder_layers',
+            'n_decoder_layers', 'n_latent_factors', 'dropout', 'n_classes', 'factor_gating')}
+        self.model = TemporalFactorAutoencoder(**architecture).to(self.device)
+        self._initial_state = {k: v.detach().cpu().clone() for k, v in self.model.state_dict().items()}
         self.training_history = []
         self.best_model_state = None
-        self.quantile_boundaries = None  # 存储全局quantile边界
-        self.scaler = StandardScaler()  # 数据标准化
-    
-    def _compute_quantile_boundaries(self, y: np.ndarray) -> np.ndarray:
-        """
-        Compute global quantile boundaries from training data.
-        
-        Args:
-            y: (n_samples,) - Continuous returns
-        
-        Returns:
-            boundaries: (n_classes + 1,) - Quantile boundaries
-        """
-        quantiles = np.linspace(0, 1, self.n_classes + 1)
-        boundaries = np.quantile(y, quantiles)
-        return boundaries
-    
+        self.best_epoch = None
+        self.quantile_boundaries = None
+        self.feature_names: Optional[list[str]] = None
+        self.scaler = StandardScaler()
+
+    def _validate_X(self, X: np.ndarray):
+        if X.ndim != 3 or X.shape[1:] != (self.seq_len, self.n_pca_factors) or len(X) == 0 or not np.isfinite(X).all():
+            raise ValueError("Expected nonempty finite (samples, seq_len, features) input")
+
     def _prepare_labels(self, y: np.ndarray, boundaries: Optional[np.ndarray] = None) -> torch.Tensor:
-        """
-        Convert continuous returns to quantile labels using pre-computed boundaries.
-        
-        Args:
-            y: (n_samples,) - Continuous returns
-            boundaries: (n_classes + 1,) - Quantile boundaries (if None, use stored)
-        
-        Returns:
-            labels: (n_samples,) - Quantile labels [0, n_classes)
-        """
+        boundaries = self.quantile_boundaries if boundaries is None else boundaries
         if boundaries is None:
-            boundaries = self.quantile_boundaries
-        
-        if boundaries is None:
-            # Fallback: compute from current batch (not ideal but backward compatible)
-            quantiles = np.linspace(0, 1, self.n_classes + 1)
-            boundaries = np.quantile(y, quantiles)
-            logger.warning("Using batch-level quantiles. Should compute global quantiles in fit().")
-        
-        # Assign labels based on boundaries
-        labels = np.zeros_like(y, dtype=np.int64)
-        for i in range(len(boundaries) - 1):
-            if i == 0:
-                # First bin: <= boundary[1]
-                mask = y <= boundaries[i+1]
-            elif i == len(boundaries) - 2:
-                # Last bin: > boundary[-2]
-                mask = y > boundaries[i]
-            else:
-                # Middle bins: boundaries[i] < y <= boundaries[i+1]
-                mask = (y > boundaries[i]) & (y <= boundaries[i+1])
-            labels[mask] = i
-        
-        return torch.LongTensor(labels)
-    
-    def fit(
-        self,
-        X: np.ndarray,
-        y: np.ndarray,
-        X_val: Optional[np.ndarray] = None,
-        y_val: Optional[np.ndarray] = None,
-        verbose: bool = True,
-    ):
-        """
-        Train the TFA model.
-        
-        Args:
-            X: (n_samples, seq_len, n_features) - Training sequences
-            y: (n_samples,) - Training targets (continuous returns)
-            X_val: Validation sequences
-            y_val: Validation targets
-            verbose: Whether to print progress
-        """
-        # Compute global quantile boundaries from training data
-        if self.quantile_boundaries is None:
-            self.quantile_boundaries = self._compute_quantile_boundaries(y)
-            if verbose:
-                logger.info(f"Computed quantile boundaries: {self.quantile_boundaries}")
-                logger.info(f"  Range: [{self.quantile_boundaries[0]:.4f}, {self.quantile_boundaries[-1]:.4f}]")
-        
-        # Normalize input data
-        n_samples, seq_len, n_features = X.shape
-        X_flat = X.reshape(-1, n_features)
-        X_flat_scaled = self.scaler.fit_transform(X_flat)
-        X_scaled = X_flat_scaled.reshape(n_samples, seq_len, n_features)
-        
-        # Convert to tensors using global boundaries
-        X_train = torch.FloatTensor(X_scaled).to(self.device)
-        y_train = self._prepare_labels(y, boundaries=self.quantile_boundaries).to(self.device)
-        
-        if X_val is not None and y_val is not None:
-            # Normalize validation data using training scaler
-            n_val_samples, val_seq_len, val_n_features = X_val.shape
-            X_val_flat = X_val.reshape(-1, val_n_features)
-            X_val_flat_scaled = self.scaler.transform(X_val_flat)
-            X_val_scaled = X_val_flat_scaled.reshape(n_val_samples, val_seq_len, val_n_features)
-            
-            X_val_tensor = torch.FloatTensor(X_val_scaled).to(self.device)
-            # Use same boundaries for validation
-            y_val_tensor = self._prepare_labels(y_val, boundaries=self.quantile_boundaries).to(self.device)
-            use_validation = True
-        else:
-            use_validation = False
-        
-        best_val_loss = float('inf')
-        patience_counter = 0
-        
-        # Create progress bar for epochs
-        epoch_pbar = tqdm(
-            range(self.epochs),
-            desc="Epochs",
-            disable=not verbose,
-            ncols=100,
-            leave=True
-        )
-        
-        for epoch in epoch_pbar:
+            raise ValueError("Fit training quantile boundaries first")
+        return torch.as_tensor(np.searchsorted(boundaries[1:-1], y, side='left'), dtype=torch.long)
+
+    def transform_inputs(self, X: np.ndarray) -> np.ndarray:
+        """Apply the exact fitted normalization used for training and interpretation."""
+        self._validate_X(X)
+        return np.asarray(self.scaler.transform(X.reshape(-1, self.n_pca_factors))).reshape(X.shape).astype(np.float32)
+
+    def fit(self, X: np.ndarray, y: np.ndarray, X_val: Optional[np.ndarray] = None,
+            y_val: Optional[np.ndarray] = None, verbose: bool = True):
+        self._validate_X(X)
+        if y.shape != (len(X),) or not np.isfinite(y).all():
+            raise ValueError("Expected one finite target per training sequence")
+        if (X_val is None) != (y_val is None):
+            raise ValueError("Validation inputs and labels must be supplied together")
+        if X_val is not None:
+            assert y_val is not None
+            self._validate_X(X_val)
+            if y_val.shape != (len(X_val),) or not np.isfinite(y_val).all():
+                raise ValueError("Invalid validation targets")
+        self.model.load_state_dict(self._initial_state)
+        self.training_history = []
+        self.best_model_state = None
+        self.best_epoch = None
+        self.quantile_boundaries = np.quantile(y, np.linspace(0, 1, self.n_classes + 1))
+        self.scaler.fit(X.reshape(-1, self.n_pca_factors))
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, patience=3, factor=.5)
+        # Keep the full panel on CPU; transfer individual training batches.
+        inputs = torch.from_numpy(self.transform_inputs(X))
+        labels = self._prepare_labels(y)
+        val_inputs = torch.from_numpy(self.transform_inputs(X_val)).to(self.device) if X_val is not None else None
+        val_labels = self._prepare_labels(y_val).to(self.device) if y_val is not None else None
+        best, patience = float('inf'), 0
+        for epoch in tqdm(range(self.epochs), disable=not verbose, desc='TFA epochs'):
             self.model.train()
-            
-            # Mini-batch training
-            indices = np.random.permutation(len(X_train))
-            epoch_losses = {
-                'total': [], 'prediction': [], 
-                'reconstruction': [], 'smoothness': [], 'orthogonality': []
-            }
-            
-            for i in range(0, len(indices), self.batch_size):
-                batch_idx = indices[i:i+self.batch_size]
-                X_batch = X_train[batch_idx]
-                y_batch = y_train[batch_idx]
-                
-                # Forward and compute loss
-                self.optimizer.zero_grad()
-                loss, loss_dict = self.model.compute_loss(
-                    X_batch, y_batch,
-                    alpha=self.alpha,
-                    beta=self.beta,
-                    gamma=self.gamma
-                )
-                
-                # Backward
+            totals = dict.fromkeys(['total', 'prediction', 'reconstruction', 'smoothness', 'orthogonality'], 0.)
+            for batch in torch.randperm(len(inputs)).split(self.batch_size):
+                self.optimizer.zero_grad(set_to_none=True)
+                loss, parts = self.model.compute_loss(inputs[batch].to(self.device), labels[batch].to(self.device),
+                                                     alpha=self.alpha, beta=self.beta, gamma=self.gamma)
+                if not torch.isfinite(loss):
+                    raise ValueError(f"Nonfinite TFA loss at epoch {epoch + 1}")
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1., error_if_nonfinite=True)
                 self.optimizer.step()
-                
-                # Log
-                for key, value in loss_dict.items():
-                    epoch_losses[key].append(value)
-            
-            # Average losses
-            avg_losses = {k: np.mean(v) for k, v in epoch_losses.items()}
-            
-            # Validation
-            if use_validation:
+                for key in totals:
+                    totals[key] += parts[key] * len(batch) / len(inputs)
+            history = dict(epoch=epoch + 1, train_loss=totals['total'],
+                           **{f'train_{k}': v for k, v in totals.items()})
+            if val_inputs is not None:
+                assert val_labels is not None
                 self.model.eval()
                 with torch.no_grad():
-                    val_loss, val_loss_dict = self.model.compute_loss(
-                        X_val_tensor, y_val_tensor,
-                        alpha=self.alpha, beta=self.beta, gamma=self.gamma
-                    )
-                    val_loss_value = val_loss.item()
-                
-                # Learning rate scheduling
-                self.scheduler.step(val_loss_value)
-                
-                # Record history
-                self.training_history.append({
-                    'epoch': epoch + 1,
-                    'train_loss': avg_losses['total'],
-                    'val_loss': val_loss_value,
-                    **{f'train_{k}': v for k, v in avg_losses.items()},
-                    **{f'val_{k}': v for k, v in val_loss_dict.items()},
-                })
-                
-                # Update progress bar
-                epoch_pbar.set_postfix({
-                    'Train': f"{avg_losses['total']:.4f}",
-                    'Val': f"{val_loss_value:.4f}",
-                    'Best': f"{best_val_loss:.4f}",
-                    'Patience': patience_counter
-                })
-                
-                if verbose and (epoch + 1) % 5 == 0:
-                    logger.info(
-                        f"Epoch {epoch+1}/{self.epochs} | "
-                        f"Train Loss: {avg_losses['total']:.4f} | "
-                        f"Val Loss: {val_loss_value:.4f} | "
-                        f"Pred: {avg_losses['prediction']:.4f} | "
-                        f"Recon: {avg_losses['reconstruction']:.4f}"
-                    )
-                
-                # Early stopping
-                if val_loss_value < best_val_loss:
-                    best_val_loss = val_loss_value
-                    patience_counter = 0
-                    self.best_model_state = {
-                        k: v.cpu().clone() 
-                        for k, v in self.model.state_dict().items()
-                    }
+                    loss, parts = self.model.compute_loss(val_inputs, val_labels, alpha=self.alpha, beta=self.beta, gamma=self.gamma)
+                if not torch.isfinite(loss):
+                    raise ValueError("Nonfinite validation loss")
+                # Same prediction criterion across auxiliary-loss ablations.
+                criterion = parts['prediction']
+                history.update(val_loss=criterion, **{f'val_{k}': v for k, v in parts.items()})
+                scheduler.step(criterion)
+                if criterion < best:
+                    best, patience = criterion, 0
+                    self.best_epoch = epoch + 1
+                    self.best_model_state = {k: v.detach().cpu().clone() for k, v in self.model.state_dict().items()}
                 else:
-                    patience_counter += 1
-                
-                if patience_counter >= self.early_stopping_patience:
-                    if verbose:
-                        logger.info(f"Early stopping at epoch {epoch+1}")
-                    # Restore best model
-                    self.model.load_state_dict(self.best_model_state)
-                    epoch_pbar.close()
-                    break
-            else:
-                self.training_history.append({
-                    'epoch': epoch + 1,
-                    'train_loss': avg_losses['total'],
-                    **{f'train_{k}': v for k, v in avg_losses.items()},
-                })
-                
-                # Update progress bar
-                epoch_pbar.set_postfix({
-                    'Train': f"{avg_losses['total']:.4f}"
-                })
-                
-                if verbose and (epoch + 1) % 5 == 0:
-                    logger.info(
-                        f"Epoch {epoch+1}/{self.epochs} | "
-                        f"Loss: {avg_losses['total']:.4f}"
-                    )
-        
-        # Close progress bar
-        epoch_pbar.close()
-    
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        """
-        Generate predictions (return expected return, not class).
-        
-        Args:
-            X: (n_samples, seq_len, n_features)
-        
-        Returns:
-            predictions: (n_samples,) - Expected returns
-        """
+                    patience += 1
+            self.training_history.append(history)
+            if val_inputs is not None and patience >= self.early_stopping_patience:
+                break
+        if self.best_model_state is not None:
+            self.model.load_state_dict(self.best_model_state)
         self.model.eval()
-        
-        # Normalize input data using training scaler
-        n_samples, seq_len, n_features = X.shape
-        X_flat = X.reshape(-1, n_features)
-        X_flat_scaled = self.scaler.transform(X_flat)
-        X_scaled = X_flat_scaled.reshape(n_samples, seq_len, n_features)
-        
-        X_tensor = torch.FloatTensor(X_scaled).to(self.device)
-        
-        with torch.no_grad():
-            probs = self.model.predict_proba(X_tensor)
-        
-        # Convert class probabilities to expected return
-        # Use actual quantile boundary midpoints as class values
-        if self.quantile_boundaries is not None:
-            # Compute midpoints of each quantile bin
-            class_values = []
-            for i in range(len(self.quantile_boundaries) - 1):
-                midpoint = (self.quantile_boundaries[i] + self.quantile_boundaries[i+1]) / 2
-                class_values.append(midpoint)
-            class_values = torch.tensor(class_values, dtype=torch.float32, device=self.device)
-        else:
-            # Fallback: use wider range based on typical return distribution
-            # Most stock returns are in [-0.3, 0.3] range monthly
-            logger.warning("No quantile boundaries found. Using default range [-0.2, 0.2]")
-            class_values = torch.linspace(-0.2, 0.2, self.n_classes, device=self.device)
-        
-        expected_returns = (probs * class_values).sum(dim=-1)
-        return expected_returns.cpu().numpy()
-    
-    def get_params(self) -> Dict:
-        """Get model parameters."""
-        return {
-            'model_type': 'TemporalFactorAutoencoder',
-            'n_pca_factors': self.n_pca_factors,
-            'seq_len': self.seq_len,
-            'n_parameters': self.model.count_parameters(),
-            'lr': self.lr,
-            'batch_size': self.batch_size,
-            'alpha': self.alpha,
-            'beta': self.beta,
-            'gamma': self.gamma,
-        }
+        return self
 
-    def save(self, path: str):
-        """Save best model weights if available, otherwise current weights."""
-        state = self.best_model_state if self.best_model_state is not None else self.model.state_dict()
-        torch.save(state, path)
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        if self.quantile_boundaries is None:
+            raise ValueError("Predict requires a fitted model")
+        scaled = self.transform_inputs(X)
+        midpoints = (self.quantile_boundaries[:-1] + self.quantile_boundaries[1:]) / 2
+        class_values = torch.tensor(midpoints, dtype=torch.float32, device=self.device)
+        outputs = []
+        self.model.eval()
+        with torch.no_grad():
+            for batch in torch.from_numpy(scaled).split(self.batch_size):
+                probs = self.model.predict_proba(batch.to(self.device))
+                outputs.append((probs * class_values).sum(-1).cpu().numpy())
+        return np.concatenate(outputs)
+
+    def get_params(self) -> Dict:
+        return dict(self.config, model_type='TemporalFactorAutoencoder', n_parameters=self.model.count_parameters())
+
+    def save(self, path: str | Path):
+        """Save an inference checkpoint; this is not an optimizer-resume snapshot."""
+        if self.quantile_boundaries is None:
+            raise ValueError("Cannot save an unfitted predictor")
+        payload = dict(format_version=1, config=deepcopy(self.config),
+                       model_state={k: v.detach().cpu().clone() for k, v in self.model.state_dict().items()},
+                       scaler={key: torch.as_tensor(np.asarray(getattr(self.scaler, key)))
+                               for key in ['mean_', 'scale_', 'var_', 'n_samples_seen_']},
+                       quantile_boundaries=torch.from_numpy(self.quantile_boundaries.copy()),
+                       feature_names=self.feature_names, label_semantics='cross-sectional percentile rank',
+                       best_epoch=self.best_epoch)
+        torch.save(payload, path)
+
+    @classmethod
+    def load(cls, path: str | Path, device: str = 'cpu'):
+        payload = torch.load(path, map_location='cpu', weights_only=True)
+        if payload.get('format_version') != 1:
+            raise ValueError("Unsupported checkpoint; legacy weight-only files lack preprocessing")
+        model = cls(**dict(payload['config'], device=device))
+        model.model.load_state_dict(payload['model_state'])
+        for key, tensor in payload['scaler'].items():
+            setattr(model.scaler, key, tensor.numpy())
+        setattr(model.scaler, 'n_features_in_', model.n_pca_factors)
+        model.quantile_boundaries = payload['quantile_boundaries'].numpy()
+        model.feature_names = payload['feature_names']
+        model.best_epoch = payload['best_epoch']
+        model.model.eval()
+        return model

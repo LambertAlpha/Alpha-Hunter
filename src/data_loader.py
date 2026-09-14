@@ -4,12 +4,13 @@ Data loading and sequence construction for time-series prediction.
 Loads PCA features and constructs rolling windows of sequences for model input.
 """
 
+import logging
+from pathlib import Path
+from typing import Any, Dict, Literal, Optional, Tuple, overload
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
-from typing import Any, Literal, Tuple, Optional, Dict, overload
 from scipy.stats import rankdata
-import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,6 +37,10 @@ class SequenceDataLoader:
         sequence_length: int = 12,
         forward_fill_limit: int = 3,
     ):
+        if not isinstance(sequence_length, int) or sequence_length < 1:
+            raise ValueError("sequence_length must be a positive integer")
+        if not isinstance(forward_fill_limit, int) or forward_fill_limit < 0:
+            raise ValueError("forward_fill_limit must be a nonnegative integer")
         self.pca_path = Path(pca_path)
         self.returns_path = Path(returns_path) if returns_path else None
         self.sequence_length = sequence_length
@@ -56,54 +61,42 @@ class SequenceDataLoader:
     
     def _load_and_validate(self) -> pd.DataFrame:
         """Load and validate PCA feature store."""
-        df = pd.read_csv(self.pca_path)
-        
-        # Validate required columns
-        if 'date' not in df.columns or 'asset' not in df.columns:
-            raise ValueError("PCA data must contain 'date' and 'asset' columns")
-        
-        # Convert date to datetime
-        df['date'] = pd.to_datetime(df['date'])
-        
-        # Merge returns if provided separately
+        def read_panel(path):
+            frame = pd.read_csv(path, dtype={'asset': str})
+            if frame.empty or not {'date', 'asset'}.issubset(frame.columns):
+                raise ValueError("Nonempty panel requires date and asset columns")
+            if frame[['date', 'asset']].isna().to_numpy().any() or frame.asset.str.strip().eq('').any():
+                raise ValueError("Missing date/asset identifiers")
+            frame['date'] = pd.to_datetime(frame.date, errors='raise').dt.to_period('M').dt.to_timestamp()
+            if frame.date.isna().any():
+                raise ValueError('Missing parsed date')
+            if frame.duplicated(['date', 'asset']).any():
+                raise ValueError("Duplicate asset/month observations")
+            return frame
+
+        df = read_panel(self.pca_path)
+        features = [col for col in df if col.startswith('pca_')]
+        if not features:
+            raise ValueError("At least one pca_ feature is required")
         if self.returns_path:
-            returns_path = self.returns_path
-            if not returns_path.exists():
-                raise FileNotFoundError(f"Returns file not found: {returns_path}")
-            
-            returns = pd.read_csv(returns_path)
-            if not {'date', 'asset', 'return'}.issubset(returns.columns):
-                raise ValueError("Returns file must contain 'date', 'asset', and 'return' columns")
-            
-            returns['date'] = pd.to_datetime(returns['date'])
-            
-            if 'return' in df.columns:
-                logger.info("Return column already exists in PCA file; skip merging external returns.")
-            else:
-                df = df.merge(
-                    returns[['date', 'asset', 'return']],
-                    on=['date', 'asset'],
-                    how='left',
-                    suffixes=('', '_ret'),
-                )
-            
-            # Normalize return column name if merge created suffix
-            if 'return_ret' in df.columns and 'return' not in df.columns:
-                df = df.rename(columns={'return_ret': 'return'})
-            
-            if 'return' in df.columns:
-                coverage = df['return'].notna().mean() * 100
-                logger.info(f"Merged returns from {returns_path} (coverage: {coverage:.2f}% rows with returns)")
-            else:
-                logger.warning("Returns merge did not produce a 'return' column; targets will be missing.")
-        elif 'return' not in df.columns:
-            logger.warning("No 'return' column found and no returns_path provided; training with targets will fail.")
-        
-        # Sort by date and asset
-        df = df.sort_values(['date', 'asset']).reset_index(drop=True)
-        
-        return df
-    
+            if 'return' in df:
+                raise ValueError("Choose embedded returns or returns_path, not both")
+            returns = read_panel(self.returns_path)
+            if 'return' not in returns:
+                raise ValueError("Returns panel requires a return column")
+            df = df.merge(returns[['date', 'asset', 'return']], how='left',
+                          on=['date', 'asset'], validate='one_to_one')
+        for column in features + (['return'] if 'return' in df else []):
+            df[column] = pd.to_numeric(df[column], errors='raise')
+            if np.isinf(df[column].to_numpy()).any():
+                raise ValueError(f"Infinite values in {column}")
+        if 'return' in df and (df['return'] < -1).any():
+            raise ValueError("Asset simple returns must be >= -1")
+        months = pd.DatetimeIndex(sorted(df.date.unique())).to_period('M').asi8
+        if len(months) > 1 and not (np.diff(months) == 1).all():
+            raise ValueError("Missing calendar months in the PCA panel")
+        return df.sort_values(['date', 'asset']).reset_index(drop=True)
+
     @overload
     def build_sequences(
         self,
@@ -161,6 +154,12 @@ class SequenceDataLoader:
             Dictionary with keys 'X', 'y', 'assets', 'date'
         """
         # Get sequence dates
+        normalized_date = pd.Timestamp(target_date)
+        if not isinstance(normalized_date, pd.Timestamp):
+            raise ValueError('Target date must not be NaT')
+        target_date = normalized_date.to_period('M').to_timestamp()
+        if include_target and 'return' not in self.df:
+            raise ValueError("Supervised sequences require return labels")
         target_idx = self.dates.index(target_date)
 
         if target_idx < self.sequence_length:
@@ -190,9 +189,8 @@ class SequenceDataLoader:
             columns = pd.MultiIndex.from_product([[feature], sequence_dates])
             values = pivoted.reindex(columns=columns)
             values.columns = sequence_dates
-            filled_features[feature] = values.ffill(
-                axis=1, limit=self.forward_fill_limit
-            )
+            filled_features[feature] = (values.ffill(axis=1, limit=self.forward_fill_limit)
+                                        if self.forward_fill_limit else values)
         filled = pd.concat(filled_features, axis=1).swaplevel(0, 1, axis=1)
         filled = filled.reindex(
             columns=pd.MultiIndex.from_product([sequence_dates, self.feature_columns])
@@ -224,6 +222,7 @@ class SequenceDataLoader:
             )
 
         # Further filter by non-missing returns if needed
+        eligible_count = len(valid_assets)
         has_return_column = 'return' in target_df.columns
         if include_target and has_return_column:
             # Only keep assets with valid returns
@@ -271,6 +270,8 @@ class SequenceDataLoader:
                 'X': X,
                 'assets': assets,
                 'date': target_date,
+                'coverage': {'target_assets': len(target_df), 'complete_histories': eligible_count,
+                             'included_assets': len(assets)},
             }
             if targets is not None:
                 result['y'] = targets
@@ -306,13 +307,15 @@ class SequenceDataLoader:
         splits = []
         
         # Start from min_train_months + sequence_length
-        start_idx = max(min_train_months, self.sequence_length + 1)
+        if train_window < min_train_months or min_train_months < 1:
+            raise ValueError("train_window must be >= min_train_months >= 1")
+        start_idx = min_train_months + self.sequence_length
         
         for i in range(start_idx, len(self.dates)):
             test_date = self.dates[i]
             
             # Training window
-            train_start_idx = max(0, i - train_window)
+            train_start_idx = max(self.sequence_length, i - train_window)
             train_dates = self.dates[train_start_idx:i]
             
             if len(train_dates) >= min_train_months:

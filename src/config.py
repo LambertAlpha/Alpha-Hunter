@@ -4,8 +4,8 @@ Configuration file for Alpha-Hunter project.
 Contains default hyperparameters and settings for all models.
 """
 
+from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
-from dataclasses import dataclass, field
 from typing import Optional
 
 
@@ -27,6 +27,13 @@ class TrainingConfig:
     output_dir: str = "results"
     save_models: bool = False
     verbose: bool = True
+    seed: int = 42
+    threads: int = 1
+    max_prediction_dates: Optional[int] = None
+    prediction_step: int = 1
+    allow_skips: bool = False
+    plot: bool = False
+    analyze: bool = False
 
 
 @dataclass
@@ -76,6 +83,7 @@ class MLPConfig:
 @dataclass
 class TFAConfig:
     """Temporal Factor Autoencoder hyperparameters."""
+    factor_gating: bool = True
     n_pca_factors: int = 11  # Number of PCA components
     seq_len: int = 36  # Sequence length (3 years)
     d_model: int = 128  # Model dimension
@@ -102,6 +110,8 @@ class EvaluationConfig:
     long_pct: float = 0.1  # Top 10% for long
     short_pct: float = 0.1  # Bottom 10% for short
     transaction_cost: float = 0.003  # 30 bps per side
+    long_weight: float = 0.5
+    short_weight: float = 0.5
     weighting: str = 'equal'  # 'equal' or 'value'
     periods_per_year: int = 12  # Monthly data
     risk_free_rate: float = 0.0
@@ -126,27 +136,20 @@ class Config:
         config = cls()
         
         for section, params in config_dict.items():
-            if hasattr(config, section):
-                section_config = getattr(config, section)
-                for key, value in params.items():
-                    if hasattr(section_config, key):
-                        setattr(section_config, key, value)
-        
+            if section not in config.__dict__ or not isinstance(params, dict):
+                raise ValueError(f"Unknown or invalid configuration section: {section}")
+            target = getattr(config, section)
+            allowed = {f.name for f in fields(target)}
+            for key, value in params.items():
+                if key not in allowed:
+                    raise ValueError(f"Unknown configuration key: {section}.{key}")
+                setattr(target, key, value)
         return config
     
     def to_dict(self) -> dict:
         """Convert config to dictionary."""
-        return {
-            'data': self.data.__dict__,
-            'training': self.training.__dict__,
-            'transformer': self.transformer.__dict__,
-            'tfa': self.tfa.__dict__,
-            'ridge': self.ridge.__dict__,
-            'random_forest': self.random_forest.__dict__,
-            'mlp': self.mlp.__dict__,
-            'evaluation': self.evaluation.__dict__,
-        }
-    
+        return {name: asdict(value) for name, value in self.__dict__.items()}
+
     def save(self, path: str | Path):
         """Save config to JSON file."""
         import json

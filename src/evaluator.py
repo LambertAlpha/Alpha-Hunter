@@ -1,419 +1,169 @@
-"""
-Performance evaluation metrics for factor investing.
-
-Implements IC, ICIR, Sharpe ratio, turnover, and portfolio backtesting.
-"""
+"""Monthly cross-sectional scores and explicit self-financing portfolio accounting."""
+import logging
+from typing import Any, Dict, Optional
 
 import numpy as np
 import pandas as pd
 from scipy import stats
-from typing import Optional, Dict, Any
-import logging
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class PerformanceEvaluator:
-    """
-    Evaluator for prediction and portfolio performance.
-    
-    Computes:
-    - Information Coefficient (IC)
-    - IC Information Ratio (ICIR)
-    - Portfolio returns (long-short, long-only)
-    - Sharpe ratio
-    - Maximum drawdown
-    - Turnover
-    """
-    
-    def __init__(self):
-        pass
-    
-    def compute_ic(
-        self,
-        predictions_df: pd.DataFrame,
-        method: str = 'spearman',
-    ) -> pd.Series:
-        """
-        Compute Information Coefficient (cross-sectional rank correlation).
-        
-        Parameters
-        ----------
-        predictions_df : pd.DataFrame
-            DataFrame with columns: date, asset, prediction, actual_return
-        method : str, default='spearman'
-            Correlation method: 'spearman' or 'pearson'
-            
-        Returns
-        -------
-        ic_series : pd.Series
-            IC for each date, indexed by date
-        """
-        ic_list = []
-        
-        for date, group in predictions_df.groupby('date'):
-            pred = group['prediction'].values
-            actual = group['actual_return'].values
-            
-            # Remove NaN values
-            valid_mask = ~(np.isnan(pred) | np.isnan(actual))
-            pred = pred[valid_mask]
-            actual = actual[valid_mask]
-            
-            if len(pred) < 2:
-                ic = np.nan
-            else:
-                if method == 'spearman':
-                    ic, _ = stats.spearmanr(pred, actual)
-                elif method == 'pearson':
-                    ic, _ = stats.pearsonr(pred, actual)
-                else:
-                    raise ValueError(f"Unknown method: {method}")
-            
-            ic_list.append({'date': date, 'ic': ic})
-        
-        ic_series = pd.DataFrame(ic_list).set_index('date')['ic']
-        return ic_series
-    
-    def compute_icir(
-        self,
-        predictions_df: pd.DataFrame,
-        method: str = 'spearman',
-    ) -> float:
-        """
-        Compute IC Information Ratio (mean IC / std IC).
-        
-        Parameters
-        ----------
-        predictions_df : pd.DataFrame
-            DataFrame with predictions and returns
-        method : str, default='spearman'
-            Correlation method
-            
-        Returns
-        -------
-        icir : float
-            Information ratio of IC
-        """
-        ic_series = self.compute_ic(predictions_df, method=method)
-        ic_mean = ic_series.mean()
-        ic_std = ic_series.std()
-        
-        if ic_std == 0 or np.isnan(ic_std):
-            return np.nan
-        
-        icir = ic_mean / ic_std
-        return icir
-    
-    def compute_portfolio_returns(
-        self,
-        predictions_df: pd.DataFrame,
-        long_pct: float = 0.1,
-        short_pct: float = 0.1,
-        transaction_cost: float = 0.003,
-        weighting: str = 'equal',
-        long_weight: float = 0.5,
-        short_weight: float = 0.5,
-        min_ls_return: Optional[float] = -0.999,
-    ) -> pd.DataFrame:
-        """
-        Compute long-short portfolio returns from predictions.
-        
-        Parameters
-        ----------
-        predictions_df : pd.DataFrame
-            DataFrame with predictions and returns
-        long_pct : float, default=0.1
-            Percentage of stocks to long (top predictions)
-        short_pct : float, default=0.1
-            Percentage of stocks to short (bottom predictions)
-        transaction_cost : float, default=0.003
-            Transaction cost per side (30 bps default)
-        weighting : str, default='equal'
-            Weighting scheme: 'equal' or 'value'
-        long_weight : float, default=0.5
-            Capital weight allocated to the long leg (fraction of total capital)
-        short_weight : float, default=0.5
-            Capital weight allocated to the short leg (fraction of total capital)
-        min_ls_return : float or None, default=-0.999
-            Floor for single-period long-short net return to enforce capital constraint.
-            Set to None to disable clipping.
-            
-        Returns
-        -------
-        portfolio_df : pd.DataFrame
-            DataFrame with columns: date, long_ret, short_ret, ls_ret, ls_ret_net
-        """
-        if long_weight < 0 or short_weight < 0:
-            raise ValueError("long_weight and short_weight must be non-negative")
-        if (long_weight + short_weight) == 0:
-            raise ValueError("At least one of long_weight or short_weight must be positive")
+def validated_panel(frame: pd.DataFrame) -> pd.DataFrame:
+    required = {'date', 'asset', 'prediction', 'actual_return'}
+    if frame.empty or not required.issubset(frame.columns):
+        raise ValueError(f"Nonempty predictions must contain {sorted(required)}")
+    frame = frame.copy()
+    if frame[list(required)].isna().to_numpy().any():
+        raise ValueError("Prediction observations must not contain missing values")
+    frame['date'] = pd.to_datetime(frame['date'])
+    frame['asset'] = frame['asset'].astype(str)
+    if frame.date.isna().any() or frame.asset.str.strip().eq('').any():
+        raise ValueError('Missing date/asset identifiers')
+    frame[['prediction', 'actual_return']] = frame[['prediction', 'actual_return']].apply(pd.to_numeric, errors='raise')
+    if frame.duplicated(['date', 'asset']).any():
+        raise ValueError("Duplicate date/asset observations")
+    values = frame[['prediction', 'actual_return']].to_numpy(dtype=float)
+    if not np.isfinite(values).all() or (frame.actual_return < -1).any():
+        raise ValueError("Scores/returns must be finite and asset simple returns >= -1")
+    return frame.sort_values(['date', 'asset'])
 
-        portfolio_records = []
-        prev_long_assets = set()
-        prev_short_assets = set()
-        
-        for date, group in predictions_df.groupby('date'):
-            # Sort by prediction
-            group = group.sort_values('prediction', ascending=False)
-            
-            n_stocks = len(group)
-            n_long = max(1, int(n_stocks * long_pct))
-            n_short = max(1, int(n_stocks * short_pct))
-            
-            # Select long and short baskets
-            long_basket = group.head(n_long)
-            short_basket = group.tail(n_short)
-            
-            long_assets = set(long_basket['asset'].values)
-            short_assets = set(short_basket['asset'].values)
-            
-            # Equal-weighted returns
-            if weighting == 'equal':
-                long_ret = long_basket['actual_return'].mean()
-                short_ret = short_basket['actual_return'].mean()
-            elif weighting == 'value':
-                # Placeholder for value weighting (requires market cap data)
-                long_ret = long_basket['actual_return'].mean()
-                short_ret = short_basket['actual_return'].mean()
+
+class PerformanceEvaluator:
+    def compute_ic(self, predictions_df: pd.DataFrame, method: str = 'spearman') -> pd.Series:
+        if method not in {'spearman', 'pearson'}:
+            raise ValueError(f"Unknown correlation method: {method}")
+        panel = validated_panel(predictions_df)
+        values = {}
+        for date, group in panel.groupby('date', sort=True):
+            pred, actual = group.prediction, group.actual_return
+            if len(group) < 2 or pred.nunique() < 2 or actual.nunique() < 2:
+                values[date] = np.nan
             else:
-                raise ValueError(f"Unknown weighting: {weighting}")
-            
-            # Long-short return (gross)
-            ls_ret = long_weight * long_ret - short_weight * short_ret
-            
-            # Compute turnover
-            long_turnover = len(long_assets - prev_long_assets) / n_long if len(prev_long_assets) > 0 else 1.0
-            short_turnover = len(short_assets - prev_short_assets) / n_short if len(prev_short_assets) > 0 else 1.0
-            avg_turnover = (long_turnover + short_turnover) / 2
-            
-            # Net return after transaction costs
-            weighted_turnover = long_turnover * long_weight + short_turnover * short_weight
-            cost = weighted_turnover * transaction_cost * 2  # close + open on both legs
-            ls_ret_net = ls_ret - cost
-            if min_ls_return is not None:
-                ls_ret_net = max(ls_ret_net, min_ls_return)
-            
-            portfolio_records.append({
-                'date': date,
-                'long_ret': long_ret,
-                'short_ret': short_ret,
-                'ls_ret': ls_ret,
-                'ls_ret_net': ls_ret_net,
-                'turnover': avg_turnover,
-                'n_long': n_long,
-                'n_short': n_short,
-            })
-            
-            prev_long_assets = long_assets
-            prev_short_assets = short_assets
-        
-        portfolio_df = pd.DataFrame(portfolio_records).set_index('date')
-        return portfolio_df
-    
-    def compute_sharpe_ratio(
-        self,
-        returns: pd.Series | pd.DataFrame,
-        periods_per_year: int = 12,
-        risk_free_rate: float = 0.0,
-        column: Optional[str] = None,
-    ) -> float:
+                func = stats.spearmanr if method == 'spearman' else stats.pearsonr
+                values[date] = float(func(pred, actual)[0])
+        return pd.Series(values, name='ic').rename_axis('date')
+
+    def compute_icir(self, predictions_df: pd.DataFrame, method: str = 'spearman') -> float:
+        ic = self.compute_ic(predictions_df, method).dropna()
+        std = ic.std()
+        return float(ic.mean() / std) if std > 0 else float('nan')
+
+    def compute_portfolio_returns(
+        self, predictions_df: pd.DataFrame, long_pct: float = 0.1,
+        short_pct: float = 0.1, transaction_cost: float = 0.003,
+        weighting: str = 'equal', long_weight: float = 0.5,
+        short_weight: float = 0.5, min_ls_return: Optional[float] = None,
+    ) -> pd.DataFrame:
+        """Rebalance signed risky weights at each month start, then earn returns.
+
+        Cost is one-way rate times L1 traded notional, including initial entry.
+        Turnover is half that notional (cash excluded). Previous weights drift
+        with asset returns and net NAV; residual cash finances trades/costs.
+        Cash earns zero. Borrow fees, market impact and terminal liquidation are
+        excluded. Weights are fractions of NAV before the current rebalance.
         """
-        Compute annualized Sharpe ratio.
-        
-        Parameters
-        ----------
-        returns : pd.Series or pd.DataFrame
-            Return series or DataFrame
-        periods_per_year : int, default=12
-            Number of periods per year (12 for monthly)
-        risk_free_rate : float, default=0.0
-            Annual risk-free rate
-        column : str, optional
-            Column name if returns is a DataFrame
-            
-        Returns
-        -------
-        sharpe : float
-            Annualized Sharpe ratio
-        """
+        if weighting != 'equal':
+            raise ValueError("Only equal weighting is implemented")
+        if min_ls_return is not None:
+            raise ValueError("Return clipping is unsupported; insolvency must be reported")
+        params = [long_pct, short_pct, transaction_cost, long_weight, short_weight]
+        if not np.isfinite(params).all() or min(params) < 0:
+            raise ValueError("Portfolio parameters must be finite and nonnegative")
+        if long_pct > 1 or short_pct > 1 or long_weight + short_weight == 0:
+            raise ValueError("Invalid portfolio fractions or zero gross exposure")
+        if (long_weight > 0 and long_pct == 0) or (short_weight > 0 and short_pct == 0):
+            raise ValueError("An enabled leg requires a positive selection fraction")
+        panel = validated_panel(predictions_df)
+        dates = pd.DatetimeIndex(panel.date.unique())
+        periods = dates.to_period('M').asi8
+        if len(periods) > 1 and not (np.diff(periods) == 1).all():
+            raise ValueError("Monthly portfolio evaluation requires consecutive months")
+        previous = pd.Series(dtype=float)
+        records = []
+        for date, group in panel.groupby('date', sort=True):
+            group = group.sort_values(['prediction', 'asset'], ascending=[False, True])
+            n_long = max(1, int(len(group) * long_pct)) if long_weight else 0
+            n_short = max(1, int(len(group) * short_pct)) if short_weight else 0
+            if n_long + n_short > len(group):
+                raise ValueError(f"{date}: too few assets for disjoint long/short baskets")
+            longs = group.head(n_long)
+            shorts = group.tail(n_short) if n_short else group.iloc[:0]
+            target = pd.Series(0., index=group.asset)
+            target.loc[longs.asset] = long_weight / n_long if n_long else 0.
+            target.loc[shorts.asset] = -short_weight / n_short if n_short else 0.
+            trades = target.subtract(previous, fill_value=0)
+            notional = float(trades.abs().sum())
+            cost = transaction_cost * notional
+            long_ret = float(longs.actual_return.mean()) if n_long else 0.
+            short_ret = float(shorts.actual_return.mean()) if n_short else 0.
+            gross = long_weight * long_ret - short_weight * short_ret
+            net = gross - cost
+            if net <= -1:
+                raise ValueError(f"{date}: portfolio insolvent (net simple return {net})")
+            asset_returns = group.set_index('asset').actual_return
+            previous = target * (1 + asset_returns) / (1 + net)
+            records.append(dict(date=date, long_ret=long_ret, short_ret=short_ret,
+                                ls_ret=gross, ls_ret_net=net, turnover=notional / 2,
+                                traded_notional=notional, transaction_cost=cost,
+                                n_long=n_long, n_short=n_short))
+        return pd.DataFrame(records).set_index('date')
+
+    @staticmethod
+    def _returns(returns: pd.Series | pd.DataFrame, column: Optional[str]) -> pd.Series:
         if isinstance(returns, pd.DataFrame):
             if column is None:
-                raise ValueError("Must specify column when returns is a DataFrame")
+                raise ValueError("Must specify column for a returns DataFrame")
             returns = returns[column]
-        
-        returns = returns.dropna()
-        
-        if len(returns) == 0:
-            return np.nan
-        
-        excess_returns = returns - (risk_free_rate / periods_per_year)
-        mean_return = excess_returns.mean()
-        std_return = excess_returns.std()
-        
-        if std_return == 0 or np.isnan(std_return):
-            return np.nan
-        
-        sharpe = (mean_return / std_return) * np.sqrt(periods_per_year)
-        return sharpe
-    
-    def compute_max_drawdown(
-        self,
-        returns: pd.Series | pd.DataFrame,
-        column: Optional[str] = None,
-    ) -> float:
-        """
-        Compute maximum drawdown.
-        
-        Parameters
-        ----------
-        returns : pd.Series or pd.DataFrame
-            Return series
-        column : str, optional
-            Column name if returns is a DataFrame
-            
-        Returns
-        -------
-        max_dd : float
-            Maximum drawdown (positive value)
-        """
-        if isinstance(returns, pd.DataFrame):
-            if column is None:
-                raise ValueError("Must specify column when returns is a DataFrame")
-            returns = returns[column]
-        
-        returns = returns.dropna()
-        
-        # Compute cumulative returns
-        cum_returns = (1 + returns).cumprod()
-        running_max = cum_returns.expanding().max()
-        drawdown = (cum_returns - running_max) / running_max
-        
-        max_dd = drawdown.min()
-        return abs(max_dd)
-    
-    def compute_turnover(
-        self,
-        predictions_df: pd.DataFrame,
-        top_pct: float = 0.1,
-    ) -> pd.Series:
-        """
-        Compute portfolio turnover over time.
-        
-        Parameters
-        ----------
-        predictions_df : pd.DataFrame
-            DataFrame with predictions
-        top_pct : float, default=0.1
-            Percentage defining the portfolio
-            
-        Returns
-        -------
-        turnover_series : pd.Series
-            Turnover for each date
-        """
-        turnover_list = []
-        prev_assets = set()
-        
-        for date, group in predictions_df.groupby('date'):
-            group = group.sort_values('prediction', ascending=False)
-            n_select = max(1, int(len(group) * top_pct))
-            current_assets = set(group.head(n_select)['asset'].values)
-            
-            if len(prev_assets) > 0:
-                turnover = len(current_assets - prev_assets) / n_select
-            else:
-                turnover = 1.0
-            
-            turnover_list.append({'date': date, 'turnover': turnover})
-            prev_assets = current_assets
-        
-        turnover_series = pd.DataFrame(turnover_list).set_index('date')['turnover']
-        return turnover_series
-    
-    def compute_summary_statistics(
-        self,
-        predictions_df: pd.DataFrame,
-        portfolio_df: Optional[pd.DataFrame] = None,
-    ) -> Dict[str, Any]:
-        """
-        Compute comprehensive summary statistics.
-        
-        Parameters
-        ----------
-        predictions_df : pd.DataFrame
-            Predictions DataFrame
-        portfolio_df : pd.DataFrame, optional
-            Portfolio returns DataFrame
-            
-        Returns
-        -------
-        stats : dict
-            Dictionary of summary statistics
-        """
-        stats = {}
-        
-        # IC statistics
-        ic_series = self.compute_ic(predictions_df, method='spearman')
-        stats['IC_mean'] = ic_series.mean()
-        stats['IC_std'] = ic_series.std()
-        stats['IC_IR'] = self.compute_icir(predictions_df, method='spearman')
-        stats['IC_positive_ratio'] = (ic_series > 0).mean()
-        
-        # Pearson IC
-        ic_pearson = self.compute_ic(predictions_df, method='pearson')
-        stats['IC_pearson_mean'] = ic_pearson.mean()
-        
-        # Portfolio statistics
-        if portfolio_df is None:
-            portfolio_df = self.compute_portfolio_returns(predictions_df)
-        
-        stats['LS_mean_return'] = portfolio_df['ls_ret_net'].mean()
-        stats['LS_std_return'] = portfolio_df['ls_ret_net'].std()
-        stats['LS_sharpe'] = self.compute_sharpe_ratio(portfolio_df, column='ls_ret_net')
-        stats['LS_max_drawdown'] = self.compute_max_drawdown(portfolio_df, column='ls_ret_net')
-        
-        stats['Long_mean_return'] = portfolio_df['long_ret'].mean()
-        stats['Long_sharpe'] = self.compute_sharpe_ratio(portfolio_df, column='long_ret')
-        
-        stats['Short_mean_return'] = portfolio_df['short_ret'].mean()
-        
-        stats['Avg_turnover'] = portfolio_df['turnover'].mean()
-        
-        # Win rate
-        stats['LS_win_rate'] = (portfolio_df['ls_ret_net'] > 0).mean()
-        
-        return stats
-    
+        if not np.isfinite(returns.to_numpy(dtype=float)).all():
+            raise ValueError("Returns contain nonfinite observations")
+        return pd.Series(returns, dtype=float)
+
+    def compute_sharpe_ratio(self, returns: pd.Series | pd.DataFrame,
+                             periods_per_year: int = 12, risk_free_rate: float = 0.,
+                             column: Optional[str] = None) -> float:
+        returns = self._returns(returns, column)
+        if periods_per_year <= 0 or not np.isfinite(risk_free_rate) or risk_free_rate <= -1:
+            raise ValueError("Invalid annualization or risk-free rate")
+        excess = returns - ((1 + risk_free_rate) ** (1 / periods_per_year) - 1)
+        std = excess.std()
+        return float(excess.mean() / std * np.sqrt(periods_per_year)) if std > 0 else float('nan')
+
+    def compute_max_drawdown(self, returns: pd.Series | pd.DataFrame,
+                             column: Optional[str] = None) -> float:
+        returns = self._returns(returns, column)
+        if (returns < -1).any():
+            raise ValueError("Simple portfolio returns cannot be below -100%")
+        wealth = (1 + returns).cumprod()
+        high = wealth.cummax().clip(lower=1.)
+        return float((1 - wealth / high).max())
+
+    def compute_turnover(self, predictions_df: pd.DataFrame, top_pct: float = .1) -> pd.Series:
+        return self.compute_portfolio_returns(predictions_df, long_pct=top_pct,
+            short_pct=0, short_weight=0, long_weight=1, transaction_cost=0).turnover
+
+    def generate_summary_statistics(self, predictions_df: pd.DataFrame,
+                                    portfolio_df: Optional[pd.DataFrame] = None,
+                                    periods_per_year: int = 12,
+                                    risk_free_rate: float = 0.) -> Dict[str, Any]:
+        ic = self.compute_ic(predictions_df).dropna()
+        portfolio = self.compute_portfolio_returns(predictions_df) if portfolio_df is None else portfolio_df
+        def sharpe(col):
+            return self.compute_sharpe_ratio(portfolio, periods_per_year, risk_free_rate, col)
+        return dict(IC_mean=ic.mean(), IC_std=ic.std(), IC_IR=self.compute_icir(predictions_df),
+                    IC_positive_ratio=(ic > 0).mean(), IC_valid_months=len(ic),
+                    prediction_months=predictions_df.date.nunique(), prediction_rows=len(predictions_df),
+                    IC_pearson_mean=self.compute_ic(predictions_df, 'pearson').mean(),
+                    LS_mean_return=portfolio.ls_ret_net.mean(), LS_std_return=portfolio.ls_ret_net.std(),
+                    LS_sharpe=sharpe('ls_ret_net'), LS_max_drawdown=self.compute_max_drawdown(portfolio, 'ls_ret_net'),
+                    Long_mean_return=portfolio.long_ret.mean(), Long_sharpe=sharpe('long_ret'),
+                    Short_mean_return=portfolio.short_ret.mean(), Avg_turnover=portfolio.turnover.mean(),
+                    Avg_transaction_cost=portfolio.transaction_cost.mean(), LS_win_rate=(portfolio.ls_ret_net > 0).mean())
+
     def print_summary(self, stats: Dict[str, Any]):
-        """Pretty print summary statistics."""
-        print("\n" + "="*60)
-        print("Performance Summary")
-        print("="*60)
-        
-        print("\nInformation Coefficient:")
-        print(f"  IC Mean:              {stats['IC_mean']:.4f}")
-        print(f"  IC Std:               {stats['IC_std']:.4f}")
-        print(f"  ICIR:                 {stats['IC_IR']:.4f}")
-        print(f"  IC>0 Ratio:           {stats['IC_positive_ratio']:.2%}")
-        
-        print("\nLong-Short Portfolio:")
-        print(f"  Mean Return (monthly): {stats['LS_mean_return']:.2%}")
-        print(f"  Std Dev:              {stats['LS_std_return']:.2%}")
-        print(f"  Sharpe Ratio:         {stats['LS_sharpe']:.4f}")
-        print(f"  Max Drawdown:         {stats['LS_max_drawdown']:.2%}")
-        print(f"  Win Rate:             {stats['LS_win_rate']:.2%}")
-        
-        print("\nLong-Only Portfolio:")
-        print(f"  Mean Return:          {stats['Long_mean_return']:.2%}")
-        print(f"  Sharpe Ratio:         {stats['Long_sharpe']:.4f}")
-        
-        print("\nTurnover:")
-        print(f"  Average Turnover:     {stats['Avg_turnover']:.2%}")
-        
-        print("="*60 + "\n")
-    
+        for name, value in stats.items():
+            print(f"{name}: {value:.6g}")
+
     def plot_performance(
         self,
         ic_series: pd.Series,
@@ -524,10 +274,10 @@ class PerformanceEvaluator:
             plt.tight_layout()
         except (OverflowError, ValueError) as e:
             logger.warning(f"tight_layout failed: {e}. Using constrained_layout instead.")
-            fig.set_constrained_layout(True)
+            fig.set_layout_engine('constrained')
         
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
             logger.info(f"Performance plot saved to {save_path}")
         
-        plt.show()
+        plt.close(fig)
