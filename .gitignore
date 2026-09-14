@@ -80,3 +80,5 @@ final_paper/UPDATE_SUMMARY.md
 !report/engineering_2026_09_14/*.json
 !report/universe_audit_2026_09_14/verification.json
 !report/universe_audit_2026_09_14/forecast.csv
+!report/recovered_2026_09_14/*.json
+!report/recovered_2026_09_14/*.csv

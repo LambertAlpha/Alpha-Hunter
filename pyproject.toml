@@ -23,7 +23,7 @@ include = ["src/data_loader.py", "src/evaluator.py", "src/trainer.py", "src/conf
 select = ["E4", "E7", "E9", "F", "I"]
 
 [tool.pyright]
-include = ["src/data_loader.py", "src/evaluator.py", "src/trainer.py", "src/config.py", "src/cli.py", "src/models.py", "src/models_tfa.py", "src/nn_utils.py", "src/tfa_analysis.py", "src/plot_tfa_attention.py", "train.py", "train_tfa.py", "train_tfa_multiple.py", "scripts/generate_fixture.py"]
+include = ["src/data_loader.py", "src/evaluator.py", "src/trainer.py", "src/config.py", "src/cli.py", "src/models.py", "src/models_tfa.py", "src/nn_utils.py", "src/tfa_analysis.py", "src/plot_tfa_attention.py", "train.py", "train_tfa.py", "train_tfa_multiple.py", "scripts/*.py"]
 typeCheckingMode = "basic"
 
 [[tool.uv.index]]

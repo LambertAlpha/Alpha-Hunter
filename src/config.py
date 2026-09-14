@@ -30,6 +30,8 @@ class TrainingConfig:
     seed: int = 42
     threads: int = 1
     max_prediction_dates: Optional[int] = None
+    prediction_start: Optional[str] = None  # Inclusive target month; training history is retained
+    prediction_end: Optional[str] = None
     prediction_step: int = 1
     allow_skips: bool = False
     plot: bool = False
@@ -107,6 +109,7 @@ class TFAConfig:
 @dataclass
 class EvaluationConfig:
     """Evaluation configuration."""
+    ranking_only: bool = False  # Suppress portfolio claims for diagnostic datasets
     long_pct: float = 0.1  # Top 10% for long
     short_pct: float = 0.1  # Bottom 10% for short
     transaction_cost: float = 0.003  # 30 bps per side
@@ -204,4 +207,3 @@ TFA_PARAM_GRID = {
     'beta': [0.01, 0.05, 0.1],  # Smoothness weight
     'lr': [5e-4, 1e-3, 2e-3],
 }
-

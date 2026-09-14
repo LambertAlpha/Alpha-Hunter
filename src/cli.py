@@ -67,7 +67,8 @@ def parse_config(argv=None, default_model='transformer'):
     for name, converter in [('pca_path', str), ('returns_path', str), ('sequence_length', int), ('forward_fill_limit', int)]:
         option(name, 'data', name, converter)
     for name, converter in [('output_dir', str), ('seed', int), ('threads', int), ('train_window', int), ('val_window', int),
-                            ('min_train_months', int), ('max_prediction_dates', int), ('prediction_step', int)]:
+                            ('min_train_months', int), ('max_prediction_dates', int), ('prediction_step', int),
+                            ('prediction_start', str), ('prediction_end', str)]:
         option(name, 'training', name, converter)
     for name in ['verbose', 'save_models', 'allow_skips', 'plot', 'analyze']:
         option(name, 'training', name, boolean=True)
@@ -75,6 +76,7 @@ def parse_config(argv=None, default_model='transformer'):
                             ('n_latent_factors', int), ('n_classes', int), ('alpha', float), ('beta', float), ('gamma', float)]:
         option(name, 'tfa', name, converter)
     option('factor_gating', 'tfa', 'factor_gating', boolean=True)
+    option('ranking_only', 'evaluation', 'ranking_only', boolean=True)
     for name, converter in [('lr', float), ('weight_decay', float), ('batch_size', int), ('epochs', int),
                             ('early_stopping_patience', int), ('dropout', float), ('device', str)]:
         option(name, 'selected_neural', name, converter)
@@ -170,7 +172,7 @@ def run_experiment(model_name: str, config: Config, output_dir: Path):
         if model_name == 'random_forest':
             config.random_forest.random_state = config.training.seed
         write_json(output_dir / 'config.json', config.to_dict())
-        metadata.update(seed=config.training.seed, rolling_seed_rule='base seed + zero-based attempted prediction index',
+        metadata.update(seed=config.training.seed, rolling_seed_rule='base seed + eligible calendar offset / prediction_step',
                         data_sha256={name: sha256_file(Path(path)) for name, path in
                                      [('pca', config.data.pca_path), ('returns', config.data.returns_path)] if path},
                         feature_names=loader.feature_columns, sequence_length=loader.sequence_length,
@@ -183,18 +185,21 @@ def run_experiment(model_name: str, config: Config, output_dir: Path):
                                        min_train_months=config.training.min_train_months, output_dir=output_dir)
         predictions = trainer.train_and_predict(save_models=config.training.save_models, verbose=config.training.verbose,
                          max_prediction_dates=config.training.max_prediction_dates, prediction_step=config.training.prediction_step,
+                         prediction_start=config.training.prediction_start, prediction_end=config.training.prediction_end,
                          allow_skips=config.training.allow_skips,
                          save_last_model_path=output_dir / 'last_model.pt' if model_name == 'tfa' else None)
         evaluator = PerformanceEvaluator()
         ic = evaluator.compute_ic(predictions)
         ic.to_csv(output_dir / 'ic.csv')
         failed = any(s['status'] == 'failed' for s in trainer.run_status)
-        if config.training.prediction_step != 1 or failed:
+        if config.evaluation.ranking_only or config.training.prediction_step != 1 or failed:
             summary = dict(IC_mean=ic.mean(), IC_std=ic.std(), IC_valid_months=int(ic.notna().sum()),
                            prediction_months=predictions.date.nunique(), prediction_rows=len(predictions),
-                           portfolio_unavailable='Sparse or failed months; no continuous monthly portfolio claimed')
+                           portfolio_unavailable=('Ranking-only diagnostic requested' if config.evaluation.ranking_only
+                                                  else 'Sparse or failed months; no continuous monthly portfolio claimed'))
         else:
             evaluation = asdict(config.evaluation)
+            evaluation.pop('ranking_only')
             annual = {k: evaluation.pop(k) for k in ['periods_per_year', 'risk_free_rate']}
             portfolio = evaluator.compute_portfolio_returns(predictions, **evaluation)
             portfolio.to_csv(output_dir / 'portfolio.csv')

@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import patch
 
 import numpy as np
+import pandas as pd
 import test_data_integrity as fixtures
 from test_data_integrity import RecordingPredictor
 
@@ -49,6 +50,34 @@ class TrainerTests(unittest.TestCase):
     def test_invalid_step_rejected(self):
         with self.assertRaises(ValueError):
             self.trainer().train_and_predict(prediction_step=-1, verbose=False)
+
+    def test_selected_period_preserves_training_history_and_model_seed(self):
+        calls = []
+        trainer = self.trainer()
+        def factory(rolling_index):
+            calls.append(rolling_index)
+            return RecordingPredictor()
+        trainer.model_factory = factory
+        complete = trainer.train_and_predict(verbose=False)
+        original_calls = list(calls)
+        dates = sorted(complete.date.unique())
+        calls.clear()
+        selected = trainer.train_and_predict(verbose=False, prediction_start=str(dates[-1]),
+                                              prediction_end=str(dates[-1]))
+        self.assertEqual(calls, [original_calls[-1]])
+        pd.testing.assert_frame_equal(selected.reset_index(drop=True),
+                                      complete[complete.date.eq(dates[-1])].reset_index(drop=True))
+        status = trainer.run_status[0]
+        self.assertLess(max(status['train_dates']), min(status['val_dates']))
+        self.assertLess(max(status['val_dates']), status['date'])
+
+    def test_unavailable_reversed_or_invalid_period_fails(self):
+        trainer = self.trainer()
+        dates = trainer.data_loader.dates
+        for bounds in [dict(prediction_start='1999-01'), dict(prediction_end='NaT'),
+                       dict(prediction_start=str(dates[-1]), prediction_end=str(dates[-2]))]:
+            with self.assertRaises(ValueError):
+                trainer.train_and_predict(verbose=False, **bounds)
 
 
 if __name__ == '__main__':

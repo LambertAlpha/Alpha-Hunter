@@ -39,10 +39,12 @@ class RollingWindowTrainer:
     def train_and_predict(self, save_models: bool = False, verbose: bool = True,
                           max_prediction_dates: Optional[int] = None, prediction_step: int = 1,
                           save_last_model_path: Optional[Path | str] = None,
-                          allow_skips: bool = False) -> pd.DataFrame:
+                          allow_skips: bool = False, prediction_start: Optional[str] = None,
+                          prediction_end: Optional[str] = None) -> pd.DataFrame:
         """Fit independent models using disjoint train/validation/target months.
 
-        max_prediction_dates limits the first N eligible calendar months before
+        Inclusive date bounds retain all preceding training history.
+        max_prediction_dates limits the first N selected calendar months before
         prediction_step is applied. Sparse outputs support ranking diagnostics,
         but must not be compounded as a continuous monthly portfolio.
         """
@@ -54,8 +56,22 @@ class RollingWindowTrainer:
         start = self.train_window + self.val_window + self.data_loader.sequence_length
         if start >= len(dates):
             raise ValueError(f'Need at least {start + 1} monthly dates; found {len(dates)}')
-        end = len(dates) if max_prediction_dates is None else min(len(dates), start + max_prediction_dates)
-        planned = list(range(start, end, prediction_step))
+        bounds = []
+        for name, value, default in [('prediction_start', prediction_start, dates[start]),
+                                     ('prediction_end', prediction_end, dates[-1])]:
+            date = pd.Timestamp(value) if value is not None else default
+            if not isinstance(date, pd.Timestamp) or pd.isna(date):
+                raise ValueError(f'{name} must be a valid month')
+            date = date.to_period('M').to_timestamp()
+            if not dates[start] <= date <= dates[-1]:
+                raise ValueError(f'{name} outside eligible range {dates[start].date()} to {dates[-1].date()}')
+            bounds.append(date)
+        if bounds[0] > bounds[1]:
+            raise ValueError('prediction_start must be <= prediction_end')
+        selected = [i for i in range(start, len(dates)) if bounds[0] <= dates[i] <= bounds[1]]
+        if max_prediction_dates is not None:
+            selected = selected[:max_prediction_dates]
+        planned = selected[::prediction_step]
         self.run_status = [dict(date=str(dates[i].date()), status='planned') for i in planned]
         self.models, self.last_model, self.last_date = {}, None, None
         self._dataset_cache.clear()
@@ -82,7 +98,10 @@ class RollingWindowTrainer:
                                      f'{missing[:10]}. Resolve labels upstream; do not select on future availability.')
                 status['stage'] = 'fit'
                 factory_params = inspect.signature(self.model_factory).parameters
-                model = (self.model_factory(rolling_index=index) if 'rolling_index' in factory_params
+                # Date restrictions must not change a month's initialization.
+                rolling_index = (i - start) // prediction_step
+                status['rolling_index'] = rolling_index
+                model = (self.model_factory(rolling_index=rolling_index) if 'rolling_index' in factory_params
                          else self.model_factory())
                 params = inspect.signature(model.fit).parameters
                 variadic = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in params.values())

@@ -72,6 +72,17 @@ class CLIIntegrationTests(unittest.TestCase):
         self.assertIn('portfolio_unavailable', result)
         self.assertFalse((self.root / 'sparse' / 'portfolio.csv').exists())
 
+    def test_ranking_only_period_keeps_ic_without_portfolio(self):
+        self.config.evaluation.ranking_only = True
+        self.config.training.prediction_start = '2011-04'
+        self.config.training.prediction_end = '2011-04'
+        path = self.root / 'ranking'
+        result = run_experiment('ridge', self.config, path)
+        self.assertEqual(result['prediction_months'], 1)
+        self.assertEqual(result['portfolio_unavailable'], 'Ranking-only diagnostic requested')
+        self.assertFalse((path / 'portfolio.csv').exists())
+        self.assertTrue((path / 'ic.csv').exists())
+
     def test_missing_test_label_partial_run_has_no_portfolio(self):
         frame = pd.read_csv(self.config.data.pca_path)
         first_test = sorted(frame.date.unique())[-2]
