@@ -25,12 +25,9 @@ quantile classes, while the baseline models use cross-sectional rank targets.
 
 The training objective combines four terms:
 
-$$
-\mathcal{L} = \mathcal{L}_{\mathrm{prediction}}
-+ \alpha\mathcal{L}_{\mathrm{reconstruction}}
-+ \beta\mathcal{L}_{\mathrm{smoothness}}
-+ \gamma\mathcal{L}_{\mathrm{decorrelation}}.
-$$
+```math
+\mathcal{L} = \mathcal{L}_{\mathrm{prediction}} + \alpha\mathcal{L}_{\mathrm{reconstruction}} + \beta\mathcal{L}_{\mathrm{smoothness}} + \gamma\mathcal{L}_{\mathrm{decorrelation}}
+```
 
 Reconstruction encourages information preservation, smoothness penalizes changes in an
 auxiliary factor-weight head, and the correlation penalty encourages decorrelated latent
