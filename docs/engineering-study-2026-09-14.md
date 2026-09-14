@@ -4,6 +4,11 @@
 original market dataset was available, so this study does not establish financial alpha
 or rehabilitate the historical Sharpe/drawdown claims.
 
+**Follow-up:** the [prediction-universe verification](../report/universe_audit_2026_09_14/README.md)
+documents a later repair to future-availability selection, 52 passing tests, unchanged
+five-model predictions on this complete fixture, and next-month inference without labels.
+The experiment results below retain their original source version and meaning.
+
 ## What changed
 
 The [evaluation audit](evaluation-audit.md) documents the root causes and fixes. The main
