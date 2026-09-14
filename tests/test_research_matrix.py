@@ -39,6 +39,10 @@ class ResearchMatrixTests(unittest.TestCase):
             self.assertEqual(manifest['total_fits'], 14)
             self.assertEqual(manifest['total_predictions'], 112)
             self.assertEqual(len(pd.read_csv(result / 'monthly_ic.csv')), 14)
+            parallel = run_matrix(config, root / 'parallel', [42], workers=2)
+            for path in result.glob('*/predictions.csv'):
+                other = parallel / path.relative_to(result)
+                pd.testing.assert_frame_equal(pd.read_csv(path), pd.read_csv(other), check_exact=True)
 
 
 if __name__ == '__main__':

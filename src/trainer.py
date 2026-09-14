@@ -118,9 +118,9 @@ class RollingWindowTrainer:
                 if save_models:
                     self.models[date] = model
                 status.update(status='success', stage='complete')
-            except Exception as exc:
+            except BaseException as exc:
                 status.update(status='failed', error=f'{type(exc).__name__}: {exc}')
-                if not allow_skips:
+                if not allow_skips or not isinstance(exc, Exception):
                     raise
             finally:
                 self._write_status()

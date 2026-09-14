@@ -224,7 +224,7 @@ def run_experiment(model_name: str, config: Config, output_dir: Path):
                         last_model_date=str(trainer.last_date.date()))
         write_json(output_dir / 'run.json', metadata)
         return summary
-    except Exception as exc:
+    except BaseException as exc:
         metadata.update(status='failed', error=f'{type(exc).__name__}: {exc}')
         write_json(output_dir / 'run.json', metadata)
         raise

@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -112,3 +113,12 @@ class CLIIntegrationTests(unittest.TestCase):
         self.root.joinpath('existing').mkdir()
         with self.assertRaises(FileExistsError):
             run_experiment('ridge', self.config, self.root / 'existing')
+
+    def test_interrupted_run_does_not_keep_running_status(self):
+        path = self.root / 'interrupted'
+        with patch('src.cli.RollingWindowTrainer.train_and_predict', side_effect=KeyboardInterrupt):
+            with self.assertRaises(KeyboardInterrupt):
+                run_experiment('ridge', self.config, path)
+        status = json.loads((path / 'run.json').read_text())
+        self.assertEqual(status['status'], 'failed')
+        self.assertIn('KeyboardInterrupt', status['error'])

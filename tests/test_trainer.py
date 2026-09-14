@@ -31,6 +31,14 @@ class TrainerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.trainer().train_and_predict(verbose=False)
 
+    def test_interrupt_is_recorded_and_never_treated_as_skippable(self):
+        trainer = self.trainer()
+        with patch.object(RecordingPredictor, 'fit', side_effect=KeyboardInterrupt):
+            with self.assertRaises(KeyboardInterrupt):
+                trainer.train_and_predict(verbose=False, allow_skips=True)
+        self.assertEqual(trainer.run_status[0]['status'], 'failed')
+        self.assertIn('KeyboardInterrupt', trainer.run_status[0]['error'])
+
     def test_zero_validation_and_last_model(self):
         trainer = self.trainer(val_window=0)
         self.assertFalse(trainer.train_and_predict(verbose=False, max_prediction_dates=1).empty)

@@ -31,3 +31,9 @@ have not been recovered; see the forthcoming audit for the implications.
 Raw/processed data, security-level predictions and model checkpoints stay local while
 redistribution rights remain unverified. Aggregate diagnostics and reproducible code may
 be shared, with the data hashes and unresolved assumptions stated explicitly.
+
+Execution uses `--workers 4` to run independent experiments in separate spawned
+processes, with each experiment retaining the declared single-thread settings.
+Serial/parallel regression checks require exact equality of every prediction.
+The initial sequential attempt was stopped for execution scheduling; its partial
+outputs remain local and are not merged into the complete parallel matrix.
