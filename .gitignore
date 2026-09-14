@@ -78,3 +78,5 @@ final_paper/UPDATE_SUMMARY.md
 # Auditable synthetic engineering study (no private market data)
 !report/engineering_2026_09_14/*.csv
 !report/engineering_2026_09_14/*.json
+!report/universe_audit_2026_09_14/verification.json
+!report/universe_audit_2026_09_14/forecast.csv

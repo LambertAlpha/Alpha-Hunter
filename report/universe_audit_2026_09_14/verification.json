@@ -1,0 +1,79 @@
+{
+  "kind": "synthetic regression verification, not market evidence",
+  "source_commit": "16dcd4a27e1dcd78c15ff49068dff762224ccc99",
+  "previous_evidence_sha256": "5a9f3b6b5c324d9c7fbeb0f56d3794e738927e9b1ba4d0ed440a790e08af2197",
+  "models": {
+    "ridge": {
+      "rows": 120,
+      "months": 6,
+      "predictions_equal_to_previous_study": true,
+      "IC_mean": 0.8205513784461153,
+      "prediction_sha256": "0d66923d63d40eac254f31067eb5ef935483ea7272c14b87110130fcbdf15be3"
+    },
+    "random_forest": {
+      "rows": 120,
+      "months": 6,
+      "predictions_equal_to_previous_study": true,
+      "IC_mean": 0.8132832080200502,
+      "prediction_sha256": "64d354d363e035f897cdae488ebb7396562c241ed4dfac9a3b5636e6b4526a2a"
+    },
+    "mlp": {
+      "rows": 120,
+      "months": 6,
+      "predictions_equal_to_previous_study": true,
+      "IC_mean": 0.5824561403508771,
+      "prediction_sha256": "294b5d571209c1bc0fa0add716d549b25e5153f0c675ab6ab370948af1b9f218"
+    },
+    "transformer": {
+      "rows": 120,
+      "months": 6,
+      "predictions_equal_to_previous_study": true,
+      "IC_mean": 0.7654135338345864,
+      "prediction_sha256": "608ca2238bcad552b8942ee563dd6ebe81dce643ccf648705f39a6a30d01c081"
+    },
+    "tfa": {
+      "rows": 120,
+      "months": 6,
+      "predictions_equal_to_previous_study": true,
+      "IC_mean": 0.8586466165413533,
+      "prediction_sha256": "8726f4e08a22da54810a51e6c6f817950316466ae1cfb7bd43fd384362658527"
+    }
+  },
+  "source_sha256": {
+    "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+    "src/cli.py": "f5bd807d43706330f6ce569ab2f2ca7a62c15cae75a997163e40b0971aa52615",
+    "src/config.py": "d349d722513f2fb3c956e8fbff492281ea359f28e70cc747a83018f10baea1e7",
+    "src/data_loader.py": "3dda1aeb9a32e034dc584e1b427b307d2daf963378edbbd7c00160e422928a29",
+    "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+    "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+    "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+    "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+    "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+    "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+    "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+    "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+    "src/trainer.py": "5af079e741c6d02a240400f19e0cbbd51156ebfc76a6358995790cd271d08096",
+    "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+    "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+    "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+    "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+  },
+  "packages": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.1",
+    "torch": "2.14.0"
+  },
+  "data_sha256": {
+    "pca": "b36d7d439cd4afa056b2dc680efeb248f6b0eaa6752f0b5676e4d8f6a242469e"
+  },
+  "python": "3.12.11",
+  "platform": "macOS-26.2-arm64-arm-64bit",
+  "next_month_forecast": {
+    "target": "2011-09-01",
+    "rows": 20,
+    "last_feature_month": "2011-08-01",
+    "target_rows_or_labels_required": false
+  }
+}
