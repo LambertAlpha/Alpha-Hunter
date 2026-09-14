@@ -190,3 +190,53 @@ initial NAV = 1. Long-leg statistics are gross basket diagnostics, not a separat
 Matched dates, multiple seeds, untouched selection/test data, costs, data availability and
 negative findings are required for a research claim. This project does not implement a
 complete nested hyperparameter search or prove the validity of its upstream market data.
+
+## Recovered-data diagnostic (September 2026)
+
+The [recovered-data report](../report/recovered_2026_09_14/README.md) uses a fixed
+PCA basis and a declared retrospective evaluation period. Its market-data files
+are private, and upstream point-in-time provenance remains incomplete. Anyone
+without those inputs can still run the synthetic example and all regression tests.
+
+With authorized long-form CSV inputs, prepare the diagnostic data using:
+
+```bash
+uv run python -m scripts.prepare_research_data \
+  --features /path/to/features_cleaned.csv \
+  --returns /path/to/monthly_returns.csv \
+  --calibration-start 2007-01 --calibration-end 2008-12 \
+  --feature-end 2023-11 --max-components 10 --variance-target .8 \
+  --output results/recovered-frozen-v1
+uv run python -m scripts.run_research_matrix \
+  --config report/recovered_2026_09_14/protocol.json \
+  --output results/recovered-matrix-v2 --seeds 13 42 101 --workers 4
+```
+
+The feature input uses `date`, `asset`, and named numeric feature columns; it must
+not contain return labels. Dates are monthly. Required feature months must be
+present and feature values finite. The return input uses `date`, `asset`, `return`
+with decimal simple returns earned during the stated month; missing labels are
+retained and reported, never forward-filled. CSV conversion itself does not
+establish the source's timing or adjustment conventions.
+
+The preparation command fits centering/loadings on calibration rows only and
+exports scores strictly after calibration. It uses full SVD to count how many
+components the variance target would require, enforces the hard cap, and records
+an unmet threshold explicitly. Outputs include `pca_basis.npz` (load with
+`numpy.load(..., allow_pickle=False)`), source/output hashes, explained variance
+and next-month label coverage. The cleaned inputs are used as supplied, with no
+extra neutralization or standardization. This cannot repair upstream leakage.
+
+For an individual diagnostic, `--prediction-start 2023-01 --prediction-end 2023-12
+--ranking-only` keeps the needed earlier training history, selects the inclusive
+target range, and suppresses portfolios. Requested bounds outside the eligible
+calendar fail. Date selection occurs before the maximum-month limit and step.
+Initialization remains tied to the eligible calendar: `base_seed +
+floor((target_index - first_eligible_index) / prediction_step)`. Restricting a date
+range therefore preserves the seed for that month's model.
+
+The matrix records its full specification before fitting. It rejects skipped or
+sparse evaluation periods, mismatched dates/assets/returns, missing training or
+validation labels and undefined monthly IC. Each run keeps exact configs,
+source/data hashes, per-month splits, predictions and status locally. Only the
+aggregate diagnostics and source hashes are included in the public report.

@@ -1,0 +1,1394 @@
+{
+  "status": "complete",
+  "git_revision": "37a56d2872095ca07af790e3ab786bffa51c8520",
+  "git_dirty": false,
+  "matrix_script_sha256": "8b5142fff6d0a709bd5a4ea4158e7d2c0313b3f5cc3375d8bf6de3cc41670150",
+  "source_sha256": {
+    "src/__init__.py": "44b959906835dc0f904a342d95cb363138066032c60a2f8e068a6c30395d12a1",
+    "src/cli.py": "04da11ec335dc7afe712bd940ab80df0f1221e989c15947b16c058992c7cc6e5",
+    "src/config.py": "8efcb3fc91bc80f18ddd236e2fab3f4f9805f8f31fab7a8d9c35c73ead7a68f3",
+    "src/data_loader.py": "3dda1aeb9a32e034dc584e1b427b307d2daf963378edbbd7c00160e422928a29",
+    "src/evaluator.py": "30bf8f5ace65524befc8789fbf2263a576fb9cef997a1be81ce0605412c6c102",
+    "src/experiment_tracker.py": "5d71b1590e5da1bdf5fc5f48c281301d42dc6e037e310b3594ae103d0645269d",
+    "src/models.py": "841d6b7f351f3140d35698b5cc22f5f3f909072935c187db9ccd5a669a0b546e",
+    "src/models_tfa.py": "77d91063fcc5efdf6d9441daff8ef1705cbb1e855230b3afaa4ec886f13598d9",
+    "src/nn_utils.py": "200c93aaf4cbf8e5b4b055fa7b6b20c12a1fc855d2f22a6164d16361a8759b07",
+    "src/plot_tfa_attention.py": "c4296d91665c003020d8a274c14f3d54b9407fb27c281acb75811fa058cca367",
+    "src/test_optimizations.py": "ede1639c11da288e0c15e2233d75fc1f947e65c90b923ff7b7e7f7a6a13c578b",
+    "src/tfa_analysis.py": "50eade60ae08cb01dea29ebd2fa58330cb36335cadd5b607bc84c51d9b5bce8d",
+    "src/trainer.py": "f69a8127b475b97be3cb4718514b192fb029245d62cef0175ea896a6dca51fd1",
+    "src/utils.py": "fb20151fb4738ebe2dedd083f0e9bf3fcf56d2fe59e38ebab189b401c2143647",
+    "train.py": "c2f65dab0c153adabd07fe81e008e99703a0fbecbf65d7d2537e9e1275625518",
+    "train_tfa.py": "41d253785295556fcf3e994f48c1d602f656efdd1fbd3d0272f445cf6ec8d9c1",
+    "train_tfa_multiple.py": "4499fc4077a3ca2f266e02b78436421255daa94aa64ebe4dcbc4e683a6754b93"
+  },
+  "python": "3.12.11",
+  "packages": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.1",
+    "torch": "2.14.0"
+  },
+  "platform": "macOS-26.2-arm64-arm-64bit",
+  "workers": 4,
+  "runs": [
+    {
+      "run": "ridge-seed42",
+      "config": {
+        "data": {
+          "pca_path": "private/pca_features.csv",
+          "returns_path": "private/returns.csv",
+          "sequence_length": 12,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 36,
+          "val_window": 6,
+          "min_train_months": 36,
+          "output_dir": "private/ridge-seed42",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_start": "2023-01",
+          "prediction_end": "2023-12",
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 64,
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 10,
+          "seq_len": 12,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.1,
+          "n_classes": 5,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "min_samples_split": 10,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "ranking_only": true,
+          "long_pct": 0.1,
+          "short_pct": 0.1,
+          "transaction_cost": 0.003,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      },
+      "status": "complete",
+      "data_sha256": {
+        "pca": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+        "returns": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+      },
+      "prediction_sha256": "d26825007a50965bf3219e737fdd506588e8d5e2bda93bd5cccfc2cd11fce137"
+    },
+    {
+      "run": "random_forest-seed42",
+      "config": {
+        "data": {
+          "pca_path": "private/pca_features.csv",
+          "returns_path": "private/returns.csv",
+          "sequence_length": 12,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 36,
+          "val_window": 6,
+          "min_train_months": 36,
+          "output_dir": "private/random_forest-seed42",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_start": "2023-01",
+          "prediction_end": "2023-12",
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 64,
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 10,
+          "seq_len": 12,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.1,
+          "n_classes": 5,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "min_samples_split": 10,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "ranking_only": true,
+          "long_pct": 0.1,
+          "short_pct": 0.1,
+          "transaction_cost": 0.003,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      },
+      "status": "complete",
+      "data_sha256": {
+        "pca": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+        "returns": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+      },
+      "prediction_sha256": "cc481148103c2d766d8e57fe059987a9bb81aa7e7bfb91f810424dab96db2c81"
+    },
+    {
+      "run": "mlp-seed42",
+      "config": {
+        "data": {
+          "pca_path": "private/pca_features.csv",
+          "returns_path": "private/returns.csv",
+          "sequence_length": 12,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 36,
+          "val_window": 6,
+          "min_train_months": 36,
+          "output_dir": "private/mlp-seed42",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_start": "2023-01",
+          "prediction_end": "2023-12",
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 64,
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 10,
+          "seq_len": 12,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.1,
+          "n_classes": 5,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "min_samples_split": 10,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "ranking_only": true,
+          "long_pct": 0.1,
+          "short_pct": 0.1,
+          "transaction_cost": 0.003,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      },
+      "status": "complete",
+      "data_sha256": {
+        "pca": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+        "returns": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+      },
+      "prediction_sha256": "1a7338a260cb9147564ee83c662243e8e6ba014742b15dbad3b3e7d0afd1fce4"
+    },
+    {
+      "run": "transformer-seed42",
+      "config": {
+        "data": {
+          "pca_path": "private/pca_features.csv",
+          "returns_path": "private/returns.csv",
+          "sequence_length": 12,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 36,
+          "val_window": 6,
+          "min_train_months": 36,
+          "output_dir": "private/transformer-seed42",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_start": "2023-01",
+          "prediction_end": "2023-12",
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 64,
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 10,
+          "seq_len": 12,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.1,
+          "n_classes": 5,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "min_samples_split": 10,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "ranking_only": true,
+          "long_pct": 0.1,
+          "short_pct": 0.1,
+          "transaction_cost": 0.003,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      },
+      "status": "complete",
+      "data_sha256": {
+        "pca": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+        "returns": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+      },
+      "prediction_sha256": "a21daa5fa102d3cf721f4228f7d4266a7a23cfef01385ae0000fa66b803387af"
+    },
+    {
+      "run": "ungated-seed13",
+      "config": {
+        "data": {
+          "pca_path": "private/pca_features.csv",
+          "returns_path": "private/returns.csv",
+          "sequence_length": 12,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 36,
+          "val_window": 6,
+          "min_train_months": 36,
+          "output_dir": "private/ungated-seed13",
+          "save_models": false,
+          "verbose": false,
+          "seed": 13,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_start": "2023-01",
+          "prediction_end": "2023-12",
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 64,
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": false,
+          "n_pca_factors": 10,
+          "seq_len": 12,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.1,
+          "n_classes": 5,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "min_samples_split": 10,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "ranking_only": true,
+          "long_pct": 0.1,
+          "short_pct": 0.1,
+          "transaction_cost": 0.003,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      },
+      "status": "complete",
+      "data_sha256": {
+        "pca": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+        "returns": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+      },
+      "prediction_sha256": "9b2f7c14c7758b53f84c8c0177be3b6760265f1ea754c639aa46a19ff194efef"
+    },
+    {
+      "run": "gated-seed13",
+      "config": {
+        "data": {
+          "pca_path": "private/pca_features.csv",
+          "returns_path": "private/returns.csv",
+          "sequence_length": 12,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 36,
+          "val_window": 6,
+          "min_train_months": 36,
+          "output_dir": "private/gated-seed13",
+          "save_models": false,
+          "verbose": false,
+          "seed": 13,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_start": "2023-01",
+          "prediction_end": "2023-12",
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 64,
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 10,
+          "seq_len": 12,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.1,
+          "n_classes": 5,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "min_samples_split": 10,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "ranking_only": true,
+          "long_pct": 0.1,
+          "short_pct": 0.1,
+          "transaction_cost": 0.003,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      },
+      "status": "complete",
+      "data_sha256": {
+        "pca": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+        "returns": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+      },
+      "prediction_sha256": "0f4b295da659e19f40b56f54af39962522422861290f97a7d4bf1683cdb88c31"
+    },
+    {
+      "run": "gated_prediction_only-seed13",
+      "config": {
+        "data": {
+          "pca_path": "private/pca_features.csv",
+          "returns_path": "private/returns.csv",
+          "sequence_length": 12,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 36,
+          "val_window": 6,
+          "min_train_months": 36,
+          "output_dir": "private/gated_prediction_only-seed13",
+          "save_models": false,
+          "verbose": false,
+          "seed": 13,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_start": "2023-01",
+          "prediction_end": "2023-12",
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 64,
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 10,
+          "seq_len": 12,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.1,
+          "n_classes": 5,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "alpha": 0.0,
+          "beta": 0.0,
+          "gamma": 0.0,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "min_samples_split": 10,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "ranking_only": true,
+          "long_pct": 0.1,
+          "short_pct": 0.1,
+          "transaction_cost": 0.003,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      },
+      "status": "complete",
+      "data_sha256": {
+        "pca": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+        "returns": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+      },
+      "prediction_sha256": "520b9d3b743ce31c3600ef55ade6c83c7f0d8e76528d765beb37ec697e364a74"
+    },
+    {
+      "run": "ungated-seed42",
+      "config": {
+        "data": {
+          "pca_path": "private/pca_features.csv",
+          "returns_path": "private/returns.csv",
+          "sequence_length": 12,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 36,
+          "val_window": 6,
+          "min_train_months": 36,
+          "output_dir": "private/ungated-seed42",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_start": "2023-01",
+          "prediction_end": "2023-12",
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 64,
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": false,
+          "n_pca_factors": 10,
+          "seq_len": 12,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.1,
+          "n_classes": 5,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "min_samples_split": 10,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "ranking_only": true,
+          "long_pct": 0.1,
+          "short_pct": 0.1,
+          "transaction_cost": 0.003,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      },
+      "status": "complete",
+      "data_sha256": {
+        "pca": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+        "returns": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+      },
+      "prediction_sha256": "ccde6bee0ae9ef15900b5640bc823e4048633e06adc2557f2bc173e2f537c084"
+    },
+    {
+      "run": "gated-seed42",
+      "config": {
+        "data": {
+          "pca_path": "private/pca_features.csv",
+          "returns_path": "private/returns.csv",
+          "sequence_length": 12,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 36,
+          "val_window": 6,
+          "min_train_months": 36,
+          "output_dir": "private/gated-seed42",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_start": "2023-01",
+          "prediction_end": "2023-12",
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 64,
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 10,
+          "seq_len": 12,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.1,
+          "n_classes": 5,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "min_samples_split": 10,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "ranking_only": true,
+          "long_pct": 0.1,
+          "short_pct": 0.1,
+          "transaction_cost": 0.003,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      },
+      "status": "complete",
+      "data_sha256": {
+        "pca": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+        "returns": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+      },
+      "prediction_sha256": "f5fa9181d16107d408f2a35dc61f6f2b50124684e7602251c2adca7a4be4baf5"
+    },
+    {
+      "run": "gated_prediction_only-seed42",
+      "config": {
+        "data": {
+          "pca_path": "private/pca_features.csv",
+          "returns_path": "private/returns.csv",
+          "sequence_length": 12,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 36,
+          "val_window": 6,
+          "min_train_months": 36,
+          "output_dir": "private/gated_prediction_only-seed42",
+          "save_models": false,
+          "verbose": false,
+          "seed": 42,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_start": "2023-01",
+          "prediction_end": "2023-12",
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 64,
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 10,
+          "seq_len": 12,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.1,
+          "n_classes": 5,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "alpha": 0.0,
+          "beta": 0.0,
+          "gamma": 0.0,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "min_samples_split": 10,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "ranking_only": true,
+          "long_pct": 0.1,
+          "short_pct": 0.1,
+          "transaction_cost": 0.003,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      },
+      "status": "complete",
+      "data_sha256": {
+        "pca": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+        "returns": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+      },
+      "prediction_sha256": "7f0ee6338d2119fbb9111a9062fd319d5b0aefb1afb69ba1c5cf175cd595e9fc"
+    },
+    {
+      "run": "ungated-seed101",
+      "config": {
+        "data": {
+          "pca_path": "private/pca_features.csv",
+          "returns_path": "private/returns.csv",
+          "sequence_length": 12,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 36,
+          "val_window": 6,
+          "min_train_months": 36,
+          "output_dir": "private/ungated-seed101",
+          "save_models": false,
+          "verbose": false,
+          "seed": 101,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_start": "2023-01",
+          "prediction_end": "2023-12",
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 64,
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": false,
+          "n_pca_factors": 10,
+          "seq_len": 12,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.1,
+          "n_classes": 5,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "min_samples_split": 10,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "ranking_only": true,
+          "long_pct": 0.1,
+          "short_pct": 0.1,
+          "transaction_cost": 0.003,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      },
+      "status": "complete",
+      "data_sha256": {
+        "pca": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+        "returns": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+      },
+      "prediction_sha256": "d0269de7d486e85c1ccd71558d23b415e5366bb063dc06821335e1c52cdb092a"
+    },
+    {
+      "run": "gated-seed101",
+      "config": {
+        "data": {
+          "pca_path": "private/pca_features.csv",
+          "returns_path": "private/returns.csv",
+          "sequence_length": 12,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 36,
+          "val_window": 6,
+          "min_train_months": 36,
+          "output_dir": "private/gated-seed101",
+          "save_models": false,
+          "verbose": false,
+          "seed": 101,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_start": "2023-01",
+          "prediction_end": "2023-12",
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 64,
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 10,
+          "seq_len": 12,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.1,
+          "n_classes": 5,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "alpha": 0.1,
+          "beta": 0.05,
+          "gamma": 0.01,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "min_samples_split": 10,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "ranking_only": true,
+          "long_pct": 0.1,
+          "short_pct": 0.1,
+          "transaction_cost": 0.003,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      },
+      "status": "complete",
+      "data_sha256": {
+        "pca": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+        "returns": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+      },
+      "prediction_sha256": "0bd74fc43ec0d3e794c0477480d104e1437f7786e6d503543b301bbe3505b9d9"
+    },
+    {
+      "run": "gated_prediction_only-seed101",
+      "config": {
+        "data": {
+          "pca_path": "private/pca_features.csv",
+          "returns_path": "private/returns.csv",
+          "sequence_length": 12,
+          "forward_fill_limit": 0
+        },
+        "training": {
+          "train_window": 36,
+          "val_window": 6,
+          "min_train_months": 36,
+          "output_dir": "private/gated_prediction_only-seed101",
+          "save_models": false,
+          "verbose": false,
+          "seed": 101,
+          "threads": 1,
+          "max_prediction_dates": null,
+          "prediction_start": "2023-01",
+          "prediction_end": "2023-12",
+          "prediction_step": 1,
+          "allow_skips": false,
+          "plot": false,
+          "analyze": false
+        },
+        "transformer": {
+          "d_model": 16,
+          "nhead": 2,
+          "num_layers": 1,
+          "dim_feedforward": 64,
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "device": "cpu"
+        },
+        "tfa": {
+          "factor_gating": true,
+          "n_pca_factors": 10,
+          "seq_len": 12,
+          "d_model": 16,
+          "n_heads": 2,
+          "n_encoder_layers": 1,
+          "n_decoder_layers": 1,
+          "n_latent_factors": 3,
+          "dropout": 0.1,
+          "n_classes": 5,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "early_stopping_patience": 3,
+          "alpha": 0.0,
+          "beta": 0.0,
+          "gamma": 0.0,
+          "device": "cpu"
+        },
+        "ridge": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "min_samples_split": 10,
+          "n_jobs": 1,
+          "random_state": 42
+        },
+        "mlp": {
+          "hidden_dims": [
+            32,
+            16
+          ],
+          "dropout": 0.1,
+          "lr": 0.001,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "epochs": 10,
+          "device": "cpu"
+        },
+        "evaluation": {
+          "ranking_only": true,
+          "long_pct": 0.1,
+          "short_pct": 0.1,
+          "transaction_cost": 0.003,
+          "long_weight": 0.5,
+          "short_weight": 0.5,
+          "weighting": "equal",
+          "periods_per_year": 12,
+          "risk_free_rate": 0.0
+        }
+      },
+      "status": "complete",
+      "data_sha256": {
+        "pca": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+        "returns": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+      },
+      "prediction_sha256": "ad1cf9709552bef859eb48bb9092ca9bfa26e5574bed73255442ea812a761c09"
+    }
+  ],
+  "total_fits": 156,
+  "total_predictions": 58617,
+  "all_date_asset_return_keys_identical": true,
+  "all_train_validation_test_labels_observed": true,
+  "tests": 63,
+  "lint": "ruff check passed",
+  "types": "pyright: 0 errors",
+  "serial_parallel_fixture_predictions": "exact match",
+  "checkpoint_verification": {
+    "model": "gated TFA, base seed 13",
+    "target_month": "2023-12",
+    "last_feature_month": "2023-11",
+    "assets": 424,
+    "labels_loaded": false,
+    "checkpoint_sha256": "588a9faf2fd8a0b88053704a22ae42184238d01a419b939dccc8569649aa6a2e",
+    "maximum_absolute_prediction_difference": 5.551115123125783e-17,
+    "feature_names": [
+      "pca_1",
+      "pca_2",
+      "pca_3",
+      "pca_4",
+      "pca_5",
+      "pca_6",
+      "pca_7",
+      "pca_8",
+      "pca_9",
+      "pca_10"
+    ]
+  },
+  "neural_parameter_counts": {
+    "mlp": 4417,
+    "transformer": 4033,
+    "tfa": 43036
+  },
+  "data_preparation_sha256": "2800f3571f82848420b1c53a1876531ac65d7ef371b90348caa95f7e780abd5e",
+  "protocol_sha256": "47cc50beed3411fc732e24f6b34fde7a71fac8e132fbff3a83a229d060ef8ada",
+  "serial_parallel_real_ridge_predictions": "all 4509 exactly equal",
+  "independent_spearman_recomputations": 156,
+  "all_run_source_hashes_identical": true,
+  "linux_ci": {
+    "run_id": 34899290034,
+    "status": "success",
+    "url": "https://github.com/LambertAlpha/Alpha-Hunter/actions/runs/34899290034"
+  }
+}

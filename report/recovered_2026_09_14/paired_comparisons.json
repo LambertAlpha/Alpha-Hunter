@@ -1,0 +1,48 @@
+[
+  {
+    "comparison": "gate_effect",
+    "contrast": "gated minus ungated",
+    "paired_mean_ic_difference": 0.0010089154669992505,
+    "seed_differences": {
+      "13": -0.0038241266975499594,
+      "42": -0.013464927768673585,
+      "101": 0.020315800867221293
+    },
+    "months": 12,
+    "seeds": [
+      13,
+      42,
+      101
+    ],
+    "bootstrap_block_months": 3,
+    "bootstrap_draws": 20000,
+    "descriptive_95pct_interval": [
+      -0.003770870812428412,
+      0.004849171634575257
+    ],
+    "limitation": "Retrospective short sample; overlapping rolling fits; no multiple-testing adjustment"
+  },
+  {
+    "comparison": "auxiliary_effect",
+    "contrast": "gated minus gated_prediction_only",
+    "paired_mean_ic_difference": 0.0011206991509249498,
+    "seed_differences": {
+      "13": 0.0008684787550755864,
+      "42": 0.0009609934182083,
+      "101": 0.0015326252794909644
+    },
+    "months": 12,
+    "seeds": [
+      13,
+      42,
+      101
+    ],
+    "bootstrap_block_months": 3,
+    "bootstrap_draws": 20000,
+    "descriptive_95pct_interval": [
+      -0.00865166886763668,
+      0.011096744948563128
+    ],
+    "limitation": "Retrospective short sample; overlapping rolling fits; no multiple-testing adjustment"
+  }
+]

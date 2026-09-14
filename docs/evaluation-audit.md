@@ -125,3 +125,22 @@ availability, tradability, corporate-action adjustments, or the absence of histo
 selection bias in training. Missing delisting returns are a substantive empirical concern;
 see [Shumway (1997), The Delisting Bias in CRSP Data](https://doi.org/10.1111/j.1540-6261.1997.tb03818.x).
 No correction value from that paper is imported, and no financial-performance gain is claimed.
+
+
+## Fourth maintenance pass: recovered data and a stable PCA basis
+
+Recovered local files exposed a component-cap off-by-one, unmatched monthly PCA
+bases, pseudo-industry exposures and a mismatch between the paper's stated dates
+and the available feature store. The [recovery audit](recovered-data-audit-2026-09-14.md)
+details the evidence and the still-unverified upstream data assumptions.
+
+The new preparation script fits a single historical PCA basis, enforces its hard
+cap and reports an unmet variance target. Explicit target-month bounds preserve
+preceding training history; ranking-only mode suppresses portfolio statistics.
+Process-isolated experiments retain deterministic seeds and identical coverage.
+
+A [13-run retrospective diagnostic](../report/recovered_2026_09_14/README.md)
+now contains 156 real-data rolling fits. Gate and auxiliary-objective average IC
+effects are approximately +0.0010 and +0.0011, with descriptive intervals spanning
+zero. This does not establish stable gains. The historical paper and its performance
+claims remain archival and unvalidated; 2023 is not an untouched holdout.

@@ -1,9 +1,81 @@
-# Recovered-data diagnostic: locked protocol
+# Recovered-data diagnostic — September 2026
 
-This is a retrospective comparison using recovered course-project features and a separate
-coursework return panel. It is not a reproduction of the 2025 paper, an untouched holdout,
-or validated investment performance. The original cleaning source and vendor conventions
-have not been recovered; see the forthcoming audit for the implications.
+**Completed:** 13 runs, 156 rolling fits and 58,617 predictions over January–December
+2023. Every run uses the same 4,509 date/asset observations. No months are skipped,
+and all eligible training, validation and test returns are observed.
+
+This is a retrospective diagnostic using recovered project features and a separate
+coursework return panel. It is **not** a reproduction of the 2025 paper, an untouched
+holdout, or validated investment performance. Upstream point-in-time provenance
+remains incomplete. See the [data audit](../../docs/recovered-data-audit-2026-09-14.md).
+
+## Results
+
+| Model / variant | Seeds | Mean monthly IC | Seed range |
+| --- | ---: | ---: | --- |
+| Ridge | 1 | 0.07485 | single base seed 42 |
+| Random forest | 1 | 0.07795 | single base seed 42 |
+| MLP | 1 | 0.03017 | single base seed 42 |
+| Transformer | 1 | 0.05979 | single base seed 42 |
+| TFA ungated | 3 | 0.09098 | 0.08594–0.10043 |
+| TFA gated | 3 | 0.09199 | 0.07311–0.12074 |
+| TFA prediction-only | 3 | 0.09087 | 0.07215–0.11921 |
+
+IC is the monthly Spearman correlation between model scores and realized stock
+returns, not a return percentage. TFA means average all three declared seeds.
+Baseline models use one seed; capacity and training objectives differ across
+families. These numbers do not alone establish architectural superiority.
+
+![Mean monthly IC and descriptive month-block intervals](comparison.svg)
+
+## What the experiment supports
+
+The gated TFA mean exceeds the ungated mean by only **0.00101 IC**. Its paired
+seed effects are **−0.00382, −0.01346 and +0.02032**: the apparent direction changes
+with initialization. The descriptive month-block interval is **[−0.00377, +0.00485]**.
+The gate is an executable architecture option, but this diagnostic does not support
+advertising it as a stable predictive improvement.
+
+All auxiliary objectives together add **0.00112 IC** over gated prediction-only
+TFA on average. The three seed differences are small and positive, but the
+month-block interval is **[−0.00865, +0.01110]**. This is insufficient evidence of a
+persistent auxiliary-loss benefit. Neither test is confirmatory, and there is no
+multiple-comparison correction. Validation checkpoint selection uses the same
+prediction cross-entropy across the three TFA variants.
+
+The best single gated seed is not an appropriate headline. It is especially
+misleading to select that seed, compare it with a baseline's single run, and
+present the gap as an architectural gain. All declared seeds are retained here.
+No defaults or hyperparameters were changed to chase these evaluation scores.
+
+The experiment improves traceability of the research pipeline; it does not repair
+unverified upstream feature timing, establish the original paper's performance,
+or validate investment returns. Twelve retrospective months and one conditional
+stock universe cannot establish broad generalization. The [data audit](../../docs/recovered-data-audit-2026-09-14.md)
+details the remaining assumptions and the next evidence needed.
+
+## Verification and artifacts
+
+- Runtime: [`37a56d2`](https://github.com/LambertAlpha/Alpha-Hunter/commit/37a56d2872095ca07af790e3ab786bffa51c8520),
+  clean working tree recorded for every run. [Linux CI](https://github.com/LambertAlpha/Alpha-Hunter/actions/runs/34899290034)
+  passed; 63 tests, Ruff and Pyright also passed locally.
+- All 156 monthly ICs were independently recomputed with SciPy. Date/asset/return
+  keys and runtime source hashes match across all 13 runs.
+- Serial and parallel fixture predictions match exactly. All 4,509 real-data
+  Ridge predictions also match the initial sequential run exactly.
+- Restoring gated TFA (base seed 13) and loading features only through November
+  2023 reproduces all 424 December predictions without labels; maximum absolute
+  difference is 5.56e-17 (CSV roundoff).
+- [verification.json](verification.json): source/data hashes, package versions,
+  effective configs with private paths replaced, model sizes and inference checks.
+- [monthly_ic.csv](monthly_ic.csv), [comparison.csv](comparison.csv),
+  [summary.json](summary.json), [paired_comparisons.json](paired_comparisons.json):
+  every declared result and paired diagnostic.
+- [split_coverage.csv](split_coverage.csv), [data_audit.json](data_audit.json):
+  temporal splits, sample counts and recovered-file provenance.
+- [Reproduction commands](../../docs/reproducibility.md#recovered-data-diagnostic-september-2026).
+  Required market inputs and security-level predictions remain private; input hashes
+  do not substitute for access rights or verified point-in-time records.
 
 ## Design declared before model evaluation
 

@@ -9,7 +9,8 @@ could improve a Transformer-based predictor's representations and empirical stab
 [Research report and archive notes](final_paper/README.md) ·
 [Reproduction guide](docs/reproducibility.md) ·
 [Evaluation audit](docs/evaluation-audit.md) ·
-[2026 engineering study](docs/engineering-study-2026-09-14.md)
+[2026 engineering study](docs/engineering-study-2026-09-14.md) ·
+[Recovered-data diagnostic](report/recovered_2026_09_14/README.md)
 
 ## Research question
 
@@ -56,6 +57,7 @@ not improve predictive metrics.
 
 | Artifact | What it contains |
 | --- | --- |
+| [Recovered-data diagnostic](report/recovered_2026_09_14/README.md) | Matched 2023 baselines and three-seed TFA ablations; upstream data provenance remains incomplete. |
 | [2025 course report](final_paper/paper.pdf) | Original research narrative and figures; read with the audit below. |
 | [11-component summary](report/11pca/summary.md) | Baselines and partial-run ablations. |
 | [31-component summary](report/31pca/summary.md) | An alternative feature configuration. |
@@ -74,9 +76,13 @@ for the remaining data assumptions.
 The [follow-up verification](report/universe_audit_2026_09_14/README.md) records 52 passing
 tests and exact agreement of all 600 complete-fixture baseline predictions with the earlier study.
 **The historical Sharpe, drawdown, and “66% lower drawdown” claims are not
-validated performance results.** Corrected full-data experiments have not been run, and some
-historical comparisons also use different evaluation horizons. Details and evidence are in
-[the audit](docs/evaluation-audit.md).
+validated performance results.** The new [recovered-data diagnostic](report/recovered_2026_09_14/README.md)
+uses a frozen PCA basis and completes 13 runs / 156 monthly fits on matched 2023
+observations. Gate and auxiliary-loss mean IC increments are only about +0.0010
+and +0.0011, with descriptive intervals spanning zero; stable gains are not
+established. Original full-horizon results have not been reproduced, and feature
+availability/constituent/return-vendor provenance remains unverified. The
+[data audit](docs/recovered-data-audit-2026-09-14.md) explains the limitations.
 
 ## My contribution
 

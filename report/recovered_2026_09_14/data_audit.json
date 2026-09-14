@@ -1,0 +1,159 @@
+{
+  "status": "recovered locally; upstream provenance incomplete",
+  "source_files": {
+    "cleaned_features": {
+      "sha256": "607473207c56ea4c7fe190da46baedd74979521cf3b912e6a78cb55cab3a0e20",
+      "bytes": 356182422,
+      "filename": "features_cleaned.csv"
+    },
+    "legacy_pca": {
+      "sha256": "e471b857d238351caf235db1c99b0dfb15498cfc1b0beede935686c9c73f7e73",
+      "bytes": 19366356,
+      "filename": "pca_feature_store.csv"
+    },
+    "legacy_variance": {
+      "sha256": "75d58963b217d63a95ad57b95221f82c794b77898e052c5f9e60c59ef6e0ee0c",
+      "bytes": 48430,
+      "filename": "pca_explained_variance.csv"
+    },
+    "local_notebook": {
+      "sha256": "f844616545643916257ab3d4264b3ce57535861af9a026082fa26ea454afdb94",
+      "bytes": 105898,
+      "filename": "pca.ipynb"
+    },
+    "course_return_pickle": {
+      "sha256": "c0c60b557ea006acde936d86d6e24624e391d941144ee9d207d2c94933b7cb53",
+      "bytes": 11993429,
+      "filename": "stock_returns.pkl"
+    },
+    "course_return_csv": {
+      "sha256": "361244e5617dc68a03e6cbb97a3d4753f877ccfaff3c671837250df93361b314",
+      "bytes": 40703706,
+      "filename": "course_returns.csv"
+    }
+  },
+  "cleaned_features": {
+    "rows": 90846,
+    "assets": 1678,
+    "months": 212,
+    "first_month": "2007-01-31",
+    "last_month": "2024-08-31",
+    "features": 203,
+    "missing_feature_cells": 0
+  },
+  "legacy_pca": {
+    "rows": 82678,
+    "assets": 1610,
+    "months": 189,
+    "first_month": "2008-12-31",
+    "last_month": "2024-08-31",
+    "features": 11,
+    "variance_mean": 0.4184754889224866,
+    "variance_min": 0.4097174569079708,
+    "variance_max": 0.4274005354331044,
+    "local_notebook_component_cap": 10,
+    "public_notebook_component_cap": 30
+  },
+  "candidate_returns": {
+    "rows": 1491084,
+    "assets": 5124,
+    "months": 291,
+    "first_month": "2000-01-31",
+    "last_month": "2024-03-31",
+    "missing_cells": 754077,
+    "minimum": -0.918918919,
+    "maximum": 15.84870629,
+    "units": "decimal simple monthly returns, based on coursework code; vendor metadata unavailable",
+    "same_as_original_paper_return_source": "unverified"
+  },
+  "prepared": {
+    "method": "frozen full-SVD PCA; no added neutralization or standardization",
+    "calibration_start": "2007-01-01",
+    "calibration_end": "2008-12-01",
+    "feature_start": "2009-01-01",
+    "feature_end": "2023-11-01",
+    "calibration_rows": 8516,
+    "feature_rows": 77878,
+    "feature_count": 203,
+    "pca_names": [
+      "pca_1",
+      "pca_2",
+      "pca_3",
+      "pca_4",
+      "pca_5",
+      "pca_6",
+      "pca_7",
+      "pca_8",
+      "pca_9",
+      "pca_10"
+    ],
+    "max_components": 10,
+    "components": 10,
+    "variance_target": 0.8,
+    "explained_variance": 0.4300216923159427,
+    "variance_target_met": false,
+    "components_needed_for_target": 55,
+    "explained_variance_ratio": [
+      0.10752912422854202,
+      0.0583988023229109,
+      0.05250000312307222,
+      0.04502489535953868,
+      0.032822120403446974,
+      0.03170084615520836,
+      0.029782627623590144,
+      0.0269290514219317,
+      0.025866089067781504,
+      0.01946813260992032
+    ],
+    "kind": "retrospective diagnostic; upstream point-in-time provenance unverified",
+    "assumptions": [
+      "Input features were available by their month end",
+      "Return labels are decimal simple returns earned during the stated month",
+      "Feature membership is an eligibility proxy, not verified tradability"
+    ],
+    "inputs": {
+      "features": {
+        "filename": "features_cleaned.csv",
+        "sha256": "607473207c56ea4c7fe190da46baedd74979521cf3b912e6a78cb55cab3a0e20"
+      },
+      "returns": {
+        "filename": "course_returns.csv",
+        "sha256": "361244e5617dc68a03e6cbb97a3d4753f877ccfaff3c671837250df93361b314"
+      }
+    },
+    "script_sha256": "d40e9d207c7d3430501055cf9db787cc0433ce4c39e998587f96928d739afa93",
+    "missing_next_month_labels": 0,
+    "outputs_sha256": {
+      "label_coverage.csv": "8c39a7947588b2f8087d7bbbb5c75241ebe387f084a85c8fb0b914f3054f2e8c",
+      "pca_basis.npz": "27ef0a699d0c69b5782890164cec756208ef563f94634bbc35b4898cdc7e3845",
+      "pca_features.csv": "d63938624746f80fac4484270572ac2da6776699994b4ecd29762a186fc32e95",
+      "returns.csv": "ed8cd02c524b47b1d70f95bf6eedd230bdc729a06ebef6515f6e20e818983d77"
+    }
+  },
+  "full_feature_overlap_next_month_labels": {
+    "months": 206,
+    "missing_labels": 0,
+    "period": "2007-02 through 2024-03",
+    "universe": "all preceding-month feature members; before complete-sequence eligibility"
+  },
+  "exported_feature_coverage": {
+    "months": 179,
+    "missing_labels": 0,
+    "max_members": 499,
+    "min_members": 220
+  },
+  "unresolved": [
+    "Original acquisition and feature-cleaning code was not found in the recovered repository history.",
+    "Financial-statement release timestamps, revision handling and historical constituent membership are not independently verified.",
+    "Return vendor, corporate-action adjustments, delisting returns and availability timestamps remain unverified.",
+    "A 12-month complete-feature rule narrows the observed universe; this is a conditional diagnostic, not all CSI500 constituents.",
+    "Frozen 2007\u20132008 PCA may become stale; this experiment tests a stable basis, not superiority of this calibration window."
+  ],
+  "cleaned_csv_pickle_validation": {
+    "matching_keys_and_columns": true,
+    "maximum_absolute_numeric_difference": 1.7763568394002505e-15,
+    "tolerance": 1e-12,
+    "datetime_precision_normalized": "ns",
+    "pickle_sha256": "113804f67240949490c74f1383afcca21a536e042cd66ccdc90514775a356268"
+  }
+}
