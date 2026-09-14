@@ -7,7 +7,7 @@ Loads PCA features and constructs rolling windows of sequences for model input.
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from typing import Tuple, Optional, Dict
+from typing import Any, Literal, Tuple, Optional, Dict, overload
 from scipy.stats import rankdata
 import logging
 
@@ -104,12 +104,37 @@ class SequenceDataLoader:
         
         return df
     
+    @overload
+    def build_sequences(
+        self,
+        target_date: pd.Timestamp,
+        include_target: bool = True,
+        return_dict: Literal[False] = False,
+    ) -> Tuple[np.ndarray, np.ndarray] | Tuple[np.ndarray, np.ndarray, np.ndarray]: ...
+
+    @overload
+    def build_sequences(
+        self,
+        target_date: pd.Timestamp,
+        include_target: bool = True,
+        *,
+        return_dict: Literal[True],
+    ) -> Dict[str, Any]: ...
+
+    @overload
+    def build_sequences(
+        self,
+        target_date: pd.Timestamp,
+        include_target: bool,
+        return_dict: Literal[True],
+    ) -> Dict[str, Any]: ...
+
     def build_sequences(
         self,
         target_date: pd.Timestamp,
         include_target: bool = True,
         return_dict: bool = False,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray] | Dict[str, np.ndarray]:
+    ) -> Tuple[np.ndarray, np.ndarray] | Tuple[np.ndarray, np.ndarray, np.ndarray] | Dict[str, Any]:
         """
         Build sequences ending at target_date (vectorized for performance).
 
@@ -157,8 +182,21 @@ class SequenceDataLoader:
             aggfunc='first'  # In case of duplicates
         )
 
-        # Forward fill missing data (limit per asset)
-        filled = pivoted.ffill(axis=1, limit=self.forward_fill_limit)
+        # Pandas pivots to (feature, date) columns. Fill each feature along
+        # time independently, then explicitly arrange columns as (date, feature).
+        # Reindexing also restores dates/features whose observations are all NaN.
+        filled_features = {}
+        for feature in self.feature_columns:
+            columns = pd.MultiIndex.from_product([[feature], sequence_dates])
+            values = pivoted.reindex(columns=columns)
+            values.columns = sequence_dates
+            filled_features[feature] = values.ffill(
+                axis=1, limit=self.forward_fill_limit
+            )
+        filled = pd.concat(filled_features, axis=1).swaplevel(0, 1, axis=1)
+        filled = filled.reindex(
+            columns=pd.MultiIndex.from_product([sequence_dates, self.feature_columns])
+        )
 
         # Find assets with complete sequences (no NaN after ffill)
         complete_mask = filled.notna().all(axis=1)
@@ -190,7 +228,7 @@ class SequenceDataLoader:
         if include_target and has_return_column:
             # Only keep assets with valid returns
             valid_returns_mask = target_df.loc[valid_assets, 'return'].notna()
-            valid_assets = valid_assets[valid_returns_mask]
+            valid_assets = pd.Index(valid_assets[valid_returns_mask])
 
             if len(valid_assets) == 0:
                 raise ValueError(
@@ -208,10 +246,11 @@ class SequenceDataLoader:
         # We need to reshape to (n_assets, seq_len, n_features)
         X = sequences_flat.reshape(n_assets, self.sequence_length, n_features)
 
-        assets = valid_assets.values
+        assets = valid_assets.to_numpy()
 
         # Get targets if requested
         targets = None
+        returns = None
         if include_target and has_return_column:
             returns = target_df.loc[valid_assets, 'return'].values
             
@@ -235,6 +274,9 @@ class SequenceDataLoader:
             }
             if targets is not None:
                 result['y'] = targets
+                # Training labels remain ranks; portfolio evaluation needs the
+                # original signed returns in economic units.
+                result['raw_returns'] = returns
             return result
         else:
             if targets is not None:
@@ -279,7 +321,7 @@ class SequenceDataLoader:
         logger.info(f"Generated {len(splits)} rolling window splits")
         return splits
 
-    def get_statistics(self) -> Dict[str, any]:
+    def get_statistics(self) -> Dict[str, Any]:
         """Get dataset statistics."""
         stats = {
             'n_dates': len(self.dates),

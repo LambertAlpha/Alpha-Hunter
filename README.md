@@ -1,76 +1,94 @@
 # Alpha-Hunter
 
-时序因子自编码器（TFA）用于股票收益预测
+Temporal representation learning for cross-sectional return prediction.
 
-## 快速开始
+An academic team project at The Chinese University of Hong Kong, Shenzhen (2025),
+by **Boyi Lin, Linyi Qian, and Tingyu Yan**. We explored whether auxiliary objectives
+could improve a Transformer-based predictor's representations and empirical stability.
 
-### 训练模型
+[Research report and archive notes](final_paper/README_paper.md) ·
+[Reproduction guide](docs/reproducibility.md) ·
+[Evaluation audit](docs/evaluation-audit.md)
+
+## Research question
+
+How does adding reconstruction and structural regularization change a temporal model's
+predictions? Using monthly equity data as the experimental setting, we compared simple
+baselines with a Temporal Factor Autoencoder (TFA), varied the number of PCA features,
+and studied the effect of auxiliary loss weights.
+
+## Method
+
+The pipeline consumes sequences of precomputed PCA features. A Transformer encoder feeds
+latent-factor and prediction heads; a decoder reconstructs the input. TFA predicts return
+quantile classes, while the baseline models use cross-sectional rank targets.
+
+The training objective combines four terms:
+
+$$
+\mathcal{L} = \mathcal{L}_{\mathrm{prediction}}
++ \alpha\mathcal{L}_{\mathrm{reconstruction}}
++ \beta\mathcal{L}_{\mathrm{smoothness}}
++ \gamma\mathcal{L}_{\mathrm{decorrelation}}.
+$$
+
+Reconstruction encourages information preservation, smoothness penalizes changes in an
+auxiliary factor-weight head, and the correlation penalty encourages decorrelated latent
+factors. These are design motivations, not guarantees of economic interpretability or
+statistical independence. The current factor-weight head does not directly gate the
+prediction path; see the [implementation audit](docs/evaluation-audit.md).
+
+| Component | Implementation |
+| --- | --- |
+| Sequence construction and separate rank/raw-return targets | [data_loader.py](src/data_loader.py) |
+| Transformer, Ridge, random forest, and MLP baselines | [models.py](src/models.py) |
+| TFA architecture and auxiliary objectives | [models_tfa.py](src/models_tfa.py) |
+| Rolling training, validation, and prediction | [trainer.py](src/trainer.py) |
+| Rank correlation and portfolio evaluation | [evaluator.py](src/evaluator.py) |
+
+## Experiments and evidence
+
+The project explored 11- and 31-component PCA inputs, baseline comparisons, removal of
+reconstruction or smoothness/decorrelation penalties, and changes to reconstruction weight.
+The preserved materials show the experimental process, including configurations that did
+not improve predictive metrics.
+
+| Artifact | What it contains |
+| --- | --- |
+| [2025 course report](final_paper/paper.pdf) | Original research narrative and figures; read with the audit below. |
+| [11-component summary](report/11pca/summary.md) | Baselines and partial-run ablations. |
+| [31-component summary](report/31pca/summary.md) | An alternative feature configuration. |
+| [Archived results](report.zip) | Selected prediction CSVs, statistics, and figures. |
+
+**Evaluation status, September 2026:** a reproducibility audit identified rank targets being
+exported as economic returns, overlapping training/validation dates, and incorrect sequence
+axis ordering in the published pipeline. The current code corrects these issues and includes
+regression tests. **The historical Sharpe, drawdown, and “66% lower drawdown” claims are not
+validated performance results.** Corrected full-data experiments have not been run, and some
+historical comparisons also use different evaluation horizons. Details and evidence are in
+[the audit](docs/evaluation-audit.md).
+
+## My contribution
+
+**Boyi Lin:** project lead; model development and experimental comparisons for the TFA
+approach, including auxiliary-loss design and ablation analysis. This is a joint course
+project with Linyi Qian and Tingyu Yan, not a sole-author publication. The report retains
+all three authors. The September 2026 maintenance work adds an explicit evidence audit,
+corrected data/evaluation plumbing, and regression coverage.
+
+## Run and inspect
+
+Use Python 3.12 and [uv](https://docs.astral.sh/uv/):
 
 ```bash
-# TFA模型
-python train_tfa.py --epochs 50
-
-# 基准模型
-python train.py --model ridge
-python train.py --model transformer
+uv venv --python 3.12
+uv pip install -r requirements.txt
+uv run --no-project python -m unittest discover -s tests -v
+uv run --no-project python train.py --help
+uv run --no-project python train_tfa.py --help
 ```
 
-### 实验跟踪
-
-```python
-from src.experiment_tracker import ExperimentTracker
-
-tracker = ExperimentTracker()
-
-# 记录实验
-exp_dir = tracker.start_experiment(
-    name='tfa_baseline',
-    description='TFA基准',
-    config={'d_model': 128},
-    tags=['tfa']
-)
-
-# 记录指标
-tracker.log_metrics(exp_dir, {'IC_mean': 0.067})
-tracker.finish_experiment(exp_dir)
-
-# 对比和导出
-df = tracker.compare_experiments()
-latex = tracker.export_to_latex(df)  # LaTeX表格
-```
-
-## 项目结构
-
-```
-src/
-├── nn_utils.py              # 共享组件
-├── models.py                # 基准模型
-├── models_tfa.py            # TFA模型
-├── data_loader.py           # 数据加载（向量化）
-├── trainer.py               # 训练框架（缓存）
-├── evaluator.py             # 评估
-├── experiment_tracker.py    # 实验跟踪
-└── config.py                # 配置
-
-train_tfa.py                 # TFA训练
-train.py                     # 基准训练
-```
-
-## 核心优化
-
-- 向量化数据加载（10-50倍提升）
-- 验证集缓存
-- 实验自动跟踪
-
-详见 [OPTIMIZATION_LOG.md](OPTIMIZATION_LOG.md)
-
-## 测试
-
-```bash
-python -m src.test_optimizations
-```
-
-## 团队
-
-Lin Boyi, Qian Linyi, Yan Tingyu
-香港中文大学（深圳）
+The tests use generated data and require no market-data credentials. Original feature and
+return datasets are not included, so passing the tests does not reproduce the research
+results. The [reproduction guide](docs/reproducibility.md) describes the input schema,
+training commands, outputs, and remaining limits.

@@ -1,5 +1,8 @@
 # 31pca Capital-Constrained Metrics (10bps per side)
 
+> Historical experiment record. Read the [September 2026 evaluation audit](../../docs/evaluation-audit.md) before interpreting these metrics. The original results have not been validated with the corrected pipeline.
+
+
 - Parameters: long_pct=0.1, short_pct=0.1, transaction_cost=0.001, long_weight=0.5, short_weight=0.5, min_ls_return=-0.999
 
 ## ridge

@@ -1,5 +1,8 @@
 # 31 因子摘要（feature/pca_feature_store.csv，rank 目标）
 
+> Historical experiment record. Read the [September 2026 evaluation audit](../../docs/evaluation-audit.md) before interpreting these metrics. The original results have not been validated with the corrected pipeline.
+
+
 数据与设置：序列 36，train/val 60/12，交易成本 30bps，returns 来自 `data/cleaned/monthly_returns_proxy.csv`。
 
 核心指标（全量，2025-12-08）：

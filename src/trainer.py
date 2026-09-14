@@ -84,7 +84,7 @@ class RollingWindowTrainer:
             Whether to print progress
         max_prediction_dates : int, optional
             Maximum number of prediction dates (default: all available dates)
-            If specified, only predict the last N dates
+            If specified, limit the eligible prediction range to its first N dates
         prediction_step : int, default=1
             Step size for prediction dates (1 = every date, 2 = every other date, etc.)
             
@@ -119,7 +119,7 @@ class RollingWindowTrainer:
         logger.info(f"Total available dates: {len(dates) - start_idx}")
         logger.info(f"Prediction dates: {len(prediction_indices)} (step={prediction_step})")
         if max_prediction_dates is not None:
-            logger.info(f"Limited to last {max_prediction_dates} dates")
+            logger.info(f"Limited to first {max_prediction_dates} eligible dates")
         
         all_predictions = []
         
@@ -142,14 +142,14 @@ class RollingWindowTrainer:
                 '进度': f"{date_idx+1}/{len(prediction_indices)}"
             })
             
-            # Define training window
-            train_end_idx = i - 1
+            # Labels before the test month are known. Reserve the most recent
+            # val_window target months for validation, excluding them from fit.
+            val_end_idx = i
+            val_start_idx = val_end_idx - self.val_window
+            train_end_idx = val_start_idx
             train_start_idx = max(0, train_end_idx - self.train_window)
             train_dates = dates[train_start_idx:train_end_idx]
-            
-            # Define validation window (last val_window months of training)
-            val_start_idx = max(train_start_idx, train_end_idx - self.val_window)
-            val_dates = dates[val_start_idx:train_end_idx]
+            val_dates = dates[val_start_idx:val_end_idx]
             
             if verbose:
                 logger.info(f"\n{'='*60}")
@@ -210,7 +210,7 @@ class RollingWindowTrainer:
                     continue
                 
                 X_test = data_dict['X']
-                y_test = data_dict.get('y', None)
+                raw_returns = data_dict.get('raw_returns')
                 assets_test = data_dict['assets']
                 
                 if verbose:
@@ -240,7 +240,7 @@ class RollingWindowTrainer:
                     logger.error(f"Mismatch: {len(assets_test)} assets but {len(predictions)} predictions for {test_date}")
                     continue
                 
-                for asset, pred, actual in zip(assets_test, predictions, y_test if y_test is not None else [None]*len(predictions)):
+                for asset, pred, actual in zip(assets_test, predictions, raw_returns if raw_returns is not None else [None]*len(predictions)):
                     all_predictions.append({
                         'date': test_date,
                         'asset': asset,
@@ -253,9 +253,10 @@ class RollingWindowTrainer:
                     self.models[test_date] = model
 
                 # Optionally persist the last trained model weights (e.g., for interpretation)
-                if save_last_model_path and is_last_date and hasattr(model, 'save'):
+                save_model = getattr(model, 'save', None)
+                if save_last_model_path and is_last_date and callable(save_model):
                     try:
-                        model.save(save_last_model_path)
+                        save_model(save_last_model_path)
                         logger.info(f"Saved last model to {save_last_model_path}")
                     except Exception as e:
                         logger.warning(f"Failed to save model to {save_last_model_path}: {e}")
@@ -284,7 +285,7 @@ class RollingWindowTrainer:
         
         if len(predictions_df) > 0:
             logger.info(f"\n{'='*60}")
-            logger.info(f"Rolling window training completed")
+            logger.info("Rolling window training completed")
             logger.info(f"Total predictions: {len(predictions_df)}")
             logger.info(f"Unique dates: {predictions_df['date'].nunique()}")
             logger.info(f"Unique assets: {predictions_df['asset'].nunique()}")

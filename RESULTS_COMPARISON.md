@@ -1,5 +1,8 @@
 # Transformer vs TFA 结果对比分析
 
+> Historical experiment record. Read the [September 2026 evaluation audit](docs/evaluation-audit.md) before interpreting these metrics. The original results have not been validated with the corrected pipeline.
+
+
 **训练日期**: 2025-12-07  
 **测试样本**: 10个预测日期（最后10个月）  
 **参数配置**: 相同（d_model=64, n_heads=4, layers=2, epochs=50, lr=5e-4, rank-based returns）
